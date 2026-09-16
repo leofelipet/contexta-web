@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Search } from "lucide-react";
 import { Avatar } from "@/components/ui";
 import { formatDate } from "@/lib/format";
+import { messageDisplay } from "@/lib/message-display";
 import type { Conversation } from "@/lib/types";
 
 export function ConversationList({ conversations, selectedId, query, contactId, nextCursor }: { conversations: Conversation[]; selectedId?: string; query?: string; contactId?: string; nextCursor?: string | null }) {
@@ -10,8 +11,9 @@ export function ConversationList({ conversations, selectedId, query, contactId, 
     <div className="scrollbar overflow-y-auto lg:h-[calc(100vh-97px)]">{conversations.length ? conversations.map((conversation) => {
       const name = conversation.title || "Conversa sem título";
       const message = conversation.last_message;
+      const preview = message ? messageDisplay(message).text : "Sem mensagens";
       const selected = selectedId === conversation.id;
-      return <Link key={conversation.id} href={`/conversations/${encodeURIComponent(conversation.id)}`} className={`focus-ring flex gap-3 border-b border-line p-4 transition ${selected ? "bg-brand-soft" : "hover:bg-slate-50"}`}><Avatar name={name} /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="truncate text-sm font-semibold">{name}</p><time className="shrink-0 text-[11px] text-muted">{formatDate(conversation.last_message_at, false)}</time></div><div className="mt-1 flex items-center gap-2"><p className="min-w-0 flex-1 truncate text-xs text-muted">{message?.text || "Sem mensagens"}</p></div></div></Link>;
+      return <Link key={conversation.id} href={`/conversations/${encodeURIComponent(conversation.id)}`} className={`focus-ring flex gap-3 border-b border-line p-4 transition ${selected ? "bg-brand-soft" : "hover:bg-slate-50"}`}><Avatar name={name} /><div className="min-w-0 flex-1"><div className="flex items-center justify-between gap-2"><p className="truncate text-sm font-semibold">{name}</p><time className="shrink-0 text-[11px] text-muted">{formatDate(conversation.last_message_at, false)}</time></div><div className="mt-1 flex items-center gap-2"><p className="min-w-0 flex-1 truncate text-xs text-muted">{preview}</p></div></div></Link>;
     }) : <div className="p-8 text-center text-sm text-muted">Nenhuma conversa encontrada.</div>}{nextCursor && <Link className="focus-ring m-4 block rounded-xl border border-line px-4 py-2.5 text-center text-xs font-semibold text-brand" href={`/conversations?${new URLSearchParams({ ...(query ? { q: query } : {}), ...(contactId ? { contact_id: contactId } : {}), cursor: nextCursor }).toString()}`}>Carregar conversas anteriores</Link>}</div>
   </section>;
 }

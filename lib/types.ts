@@ -31,6 +31,13 @@ export type Message = {
   text?: string | null;
   type?: string;
   status?: string | null;
+  transcription?: {
+    status: string;
+    text?: string;
+    language?: string;
+    model?: string;
+    transcribed_at?: string;
+  } | null;
   timestamp: string;
   [key: string]: unknown;
 };

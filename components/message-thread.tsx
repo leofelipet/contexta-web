@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { formatDate } from "@/lib/format";
+import { messageDisplay } from "@/lib/message-display";
 import type { Message } from "@/lib/types";
 
 export function MessageThread({ conversationId, initialMessages, initialCursor }: { conversationId: string; initialMessages: Message[]; initialCursor?: string | null }) {
@@ -50,7 +51,7 @@ export function MessageThread({ conversationId, initialMessages, initialCursor }
       {cursor && <button onClick={loadOlder} disabled={loading} className="focus-ring mx-auto mb-3 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted shadow-sm">{loading && <LoaderCircle className="animate-spin" size={14} />}Carregar mensagens anteriores</button>}
       {error && <p className="mb-2 text-center text-xs text-red-700">{error}</p>}
       {!messages.length && <p className="mx-auto mt-20 rounded-xl bg-white/80 px-4 py-3 text-sm text-muted">Ainda não há mensagens nesta conversa.</p>}
-      {messages.map((message) => { const outbound = message.direction === "outbound"; return <div key={message.id} className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 shadow-sm md:max-w-[72%] ${outbound ? "ml-auto rounded-br-md bg-[#d9fdd3]" : "mr-auto rounded-bl-md bg-white"}`}><p className="whitespace-pre-wrap break-words text-sm leading-5">{message.text || `[${message.type || "mensagem"}]`}</p><div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-muted"><time>{formatDate(message.timestamp)}</time>{outbound && message.status && <span>· {message.status}</span>}</div></div>; })}
+      {messages.map((message) => { const outbound = message.direction === "outbound"; const display = messageDisplay(message); return <div key={message.id} className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 shadow-sm md:max-w-[72%] ${outbound ? "ml-auto rounded-br-md bg-[#d9fdd3]" : "mr-auto rounded-bl-md bg-white"}`}>{display.audioLabel && <p className="mb-1 text-[11px] font-semibold text-brand">{display.audioLabel}</p>}<p className="whitespace-pre-wrap break-words text-sm leading-5">{display.text}</p><div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-muted"><time>{formatDate(message.timestamp)}</time>{outbound && message.status && <span>· {message.status}</span>}</div></div>; })}
     </div>
   </div>;
 }
