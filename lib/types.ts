@@ -132,3 +132,20 @@ export type StaleConversationsResponse = {
   next_cursor?: string | null;
   days: number;
 };
+
+export type TaskStatus = "pending" | "in_progress" | "done" | "cancelled";
+
+export type Task = {
+  id: string;
+  title: string;
+  description?: string | null;
+  company?: string | null;
+  status: TaskStatus | string;
+  due_at?: string | null;
+  conversation_id?: string | null;
+  contact_id?: string | null;
+  conversation_title?: string | null;
+  contact_name?: string | null;
+  created_at: string;
+  updated_at: string;
+};

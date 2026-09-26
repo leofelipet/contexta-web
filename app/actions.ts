@@ -66,3 +66,59 @@ export async function deleteStaleConversation(formData: FormData) {
   await apiFetch(`/api/v1/conversations/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/limpeza?deleted=1");
 }
+
+export async function createTask(formData: FormData) {
+  await requireSession();
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const company = String(formData.get("company") || "").trim();
+  const status = String(formData.get("status") || "").trim() || "pending";
+  const dueAt = String(formData.get("due_at") || "").trim();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  await apiFetch("/api/v1/tasks", {
+    method: "POST",
+    body: {
+      title,
+      ...(description ? { description } : {}),
+      ...(company ? { company } : {}),
+      status,
+      ...(dueAt ? { due_at: dueAt } : {}),
+      ...(conversationId ? { conversation_id: conversationId } : {}),
+      ...(contactId ? { contact_id: contactId } : {}),
+    },
+  });
+  redirect("/tarefas?created=1");
+}
+
+export async function updateTask(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  const title = String(formData.get("title") || "").trim();
+  const description = String(formData.get("description") || "").trim();
+  const company = String(formData.get("company") || "").trim();
+  const status = String(formData.get("status") || "").trim();
+  const dueAt = String(formData.get("due_at") || "").trim();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  await apiFetch(`/api/v1/tasks/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: {
+      title,
+      description,
+      company,
+      status,
+      due_at: dueAt,
+      conversation_id: conversationId,
+      contact_id: contactId,
+    },
+  });
+  redirect(`/tarefas/${encodeURIComponent(id)}?updated=1`);
+}
+
+export async function deleteTask(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/tasks/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/tarefas?deleted=1");
+}

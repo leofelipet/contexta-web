@@ -12,7 +12,7 @@ export class ApiError extends Error {
 
 export async function apiFetch<T>(path: string, options: {
   query?: Record<string, QueryValue>;
-  method?: "GET" | "POST" | "DELETE";
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
   body?: unknown;
 } = {}): Promise<T> {
   await requireSession();
