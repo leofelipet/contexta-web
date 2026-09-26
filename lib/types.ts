@@ -161,7 +161,13 @@ export type StaleConversationsResponse = {
   days: number;
 };
 
-export type TaskStatus = "pending" | "in_progress" | "done" | "cancelled";
+export type TaskStatus = "pending" | "in_progress" | "blocked" | "done" | "cancelled";
+
+export type TaskMemoryRef = {
+  id: string;
+  title?: string;
+  source?: string;
+};
 
 export type Task = {
   id: string;
@@ -174,6 +180,7 @@ export type Task = {
   contact_id?: string | null;
   conversation_title?: string | null;
   contact_name?: string | null;
+  memories?: TaskMemoryRef[];
   created_at: string;
   updated_at: string;
 };

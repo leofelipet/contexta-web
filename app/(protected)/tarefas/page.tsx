@@ -13,6 +13,7 @@ export const metadata: Metadata = { title: "Tarefas" };
 const statusLabel: Record<string, string> = {
   pending: "Pendente",
   in_progress: "Em andamento",
+  blocked: "Bloqueada",
   done: "Concluída",
   cancelled: "Cancelada",
 };
@@ -21,6 +22,7 @@ function statusTone(status: string): "success" | "danger" | "neutral" | "warning
   if (status === "done") return "success";
   if (status === "cancelled") return "neutral";
   if (status === "in_progress") return "warning";
+  if (status === "blocked") return "danger";
   return "neutral";
 }
 
@@ -118,6 +120,7 @@ export default async function TarefasPage({
               ["", "Todos"],
               ["pending", "Pendente"],
               ["in_progress", "Em andamento"],
+              ["blocked", "Bloqueada"],
               ["done", "Concluída"],
               ["cancelled", "Cancelada"],
             ]}

@@ -9,6 +9,7 @@ import type { Contact, Conversation } from "@/lib/types";
 const statuses = [
   { value: "pending", label: "Pendente" },
   { value: "in_progress", label: "Em andamento" },
+  { value: "blocked", label: "Bloqueada" },
   { value: "done", label: "Concluída" },
   { value: "cancelled", label: "Cancelada" },
 ] as const;

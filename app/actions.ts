@@ -133,6 +133,28 @@ export async function deleteTask(formData: FormData) {
   redirect("/tarefas?deleted=1");
 }
 
+export async function attachTaskMemory(formData: FormData) {
+  await requireSession();
+  const taskId = String(formData.get("task_id") || "").trim();
+  const memoryId = String(formData.get("memory_id") || "").trim();
+  await apiFetch(`/api/v1/tasks/${encodeURIComponent(taskId)}/memories`, {
+    method: "POST",
+    body: { memory_id: memoryId },
+  });
+  redirect(`/tarefas/${encodeURIComponent(taskId)}?updated=1`);
+}
+
+export async function detachTaskMemory(formData: FormData) {
+  await requireSession();
+  const taskId = String(formData.get("task_id") || "").trim();
+  const memoryId = String(formData.get("memory_id") || "").trim();
+  await apiFetch(
+    `/api/v1/tasks/${encodeURIComponent(taskId)}/memories/${encodeURIComponent(memoryId)}`,
+    { method: "DELETE" },
+  );
+  redirect(`/tarefas/${encodeURIComponent(taskId)}?updated=1`);
+}
+
 export async function createMemory(formData: FormData) {
   await requireSession();
   const title = String(formData.get("title") || "").trim();
