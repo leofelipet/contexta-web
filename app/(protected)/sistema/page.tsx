@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Activity, Bot, Database, Gauge, HardDrive, Layers3, PlugZap, Server, ShieldCheck, CircleAlert } from "lucide-react";
+import { Activity, Database, Gauge, HardDrive, Layers3, PlugZap, Server, ShieldCheck, CircleAlert } from "lucide-react";
+import { SectionTabs, sistemaTabs } from "@/components/section-tabs";
 import { Badge, PageHeader } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 import { formatBytes, formatDate, formatUptime } from "@/lib/format";
@@ -21,11 +22,12 @@ export default async function SistemaPage() {
 
   return <div className="mx-auto max-w-7xl p-5 md:p-9 lg:p-12">
     <PageHeader
-      eyebrow="Operação e infraestrutura"
-      title="Sistema"
+      eyebrow="Sistema"
+      title="Saúde"
       description="Saúde da API, ingestão e armazenamento em um só lugar."
       action={<Badge tone={attention ? "warning" : "success"}>{attention ? "Atenção" : "Operacional"}</Badge>}
     />
+    <SectionTabs items={[...sistemaTabs]} />
 
     <section className={`mb-6 flex items-start gap-3 rounded-2xl border px-4 py-4 ${attention ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}>
       <span className={attention ? "text-amber-700" : "text-emerald-700"}>{attention ? <CircleAlert size={20} /> : <ShieldCheck size={20} />}</span>
@@ -90,12 +92,12 @@ export default async function SistemaPage() {
 
       <article className="rounded-2xl border border-line bg-white p-6">
         <h2 className="font-semibold">Atalhos</h2>
-        <p className="mt-1 text-sm text-muted">Detalhes de produto e integrações</p>
+        <p className="mt-1 text-sm text-muted">Áreas relacionadas</p>
         <div className="mt-5 space-y-2">
           <Shortcut href="/dashboard" icon={Activity} label="Visão geral" />
           <Shortcut href="/limpeza" icon={HardDrive} label="Limpeza de conversas" />
-          <Shortcut href="/whatsapp" icon={PlugZap} label="WhatsApp" />
-          <Shortcut href="/mcp" icon={Bot} label="MCP" />
+          <Shortcut href="/whatsapp" icon={PlugZap} label="Integrações" />
+          <Shortcut href="/logs" icon={Activity} label="Atividade" />
         </div>
       </article>
     </section>
