@@ -21,12 +21,20 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
   const name = conversation.title || "Conversa sem título";
   const messages = [...itemsFrom(messagePayload)].reverse();
   const cursor = Array.isArray(messagePayload) ? null : messagePayload.next_cursor;
-  const alreadyBlocked = itemsFrom(denylistPayload).some(
-    (entry) => entry.target_type === "conversation" && entry.target_id === id,
-  );
+  const denylist = itemsFrom(denylistPayload);
+  const blockedConversationIds = denylist.filter((entry) => entry.target_type === "conversation").map((entry) => entry.target_id);
+  const blockedContactIds = denylist.filter((entry) => entry.target_type === "contact").map((entry) => entry.target_id);
+  const alreadyBlocked = blockedConversationIds.includes(id)
+    || Boolean(conversation.contact_id && blockedContactIds.includes(conversation.contact_id));
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden md:h-screen">
-      <ConversationList conversations={itemsFrom(listPayload)} selectedId={id} nextCursor={Array.isArray(listPayload) ? null : listPayload.next_cursor} />
+      <ConversationList
+        conversations={itemsFrom(listPayload)}
+        selectedId={id}
+        nextCursor={Array.isArray(listPayload) ? null : listPayload.next_cursor}
+        blockedConversationIds={blockedConversationIds}
+        blockedContactIds={blockedContactIds}
+      />
       <section className="flex min-w-0 flex-1 flex-col bg-chat">
         <header className="flex h-[70px] shrink-0 items-center gap-3 border-b border-line bg-white px-4">
           <Link href="/conversations" aria-label="Voltar" className="focus-ring rounded-lg p-2 text-muted lg:hidden"><ArrowLeft size={20} /></Link>

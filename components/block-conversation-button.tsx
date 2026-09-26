@@ -50,7 +50,7 @@ export function BlockConversationButton({
             formData.set("target_type", "conversation");
             formData.set("target_id", conversationId);
             formData.set("reason", `Bloqueada pela tela da conversa`);
-            formData.set("redirect_to", `/denylist?added=1`);
+            formData.set("redirect_to", `/conversations/${encodeURIComponent(conversationId)}`);
             await addDenylistEntry(formData);
           });
         }}
