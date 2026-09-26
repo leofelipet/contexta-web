@@ -26,6 +26,8 @@ export type Conversation = {
 export type Message = {
   id: string;
   conversation_id?: string;
+  sender?: string | null;
+  sender_contact_id?: string | null;
   direction?: "inbound" | "outbound" | string;
   body?: string | null;
   text?: string | null;
