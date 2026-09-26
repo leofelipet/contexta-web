@@ -43,16 +43,19 @@ export default async function TarefasPage({
     status?: string;
     company?: string;
     overdue?: string;
+    closed?: string;
     q?: string;
   }>;
 }) {
   const query = await searchParams;
+  const showClosed = query.closed === "1";
   const filters = {
     cursor: query.cursor,
     limit: 50,
     status: query.status || undefined,
     company: query.company || undefined,
     overdue: query.overdue === "1" ? "1" : undefined,
+    open_only: showClosed || query.status ? undefined : "1",
     q: query.q || undefined,
   };
 
@@ -69,6 +72,7 @@ export default async function TarefasPage({
   if (query.status) filterParams.set("status", query.status);
   if (query.company) filterParams.set("company", query.company);
   if (query.overdue === "1") filterParams.set("overdue", "1");
+  if (showClosed) filterParams.set("closed", "1");
   if (query.q) filterParams.set("q", query.q);
 
   return (
@@ -91,13 +95,13 @@ export default async function TarefasPage({
 
       <TaskCreateForm conversations={conversations} contacts={contacts} />
 
-      <div className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto]">
+      <div className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[1fr_1fr_auto_auto_auto]">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Busca</span>
           <LiveSearchInput
             name="q"
             defaultValue={query.q || ""}
-            placeholder="Título ou descrição"
+            placeholder="Título, descrição ou #ID"
             className="focus-ring h-10 w-full rounded-xl border border-line bg-white pl-10 pr-3 text-sm"
           />
         </label>
@@ -117,7 +121,7 @@ export default async function TarefasPage({
             label="Status"
             value={query.status || ""}
             options={[
-              ["", "Todos"],
+              ["", "Abertas"],
               ["pending", "Pendente"],
               ["in_progress", "Em andamento"],
               ["blocked", "Bloqueada"],
@@ -129,6 +133,9 @@ export default async function TarefasPage({
         </label>
         <div className="flex items-end pb-2">
           <LiveCheckbox name="overdue" label="Só atrasadas" checked={query.overdue === "1"} />
+        </div>
+        <div className="flex items-end pb-2">
+          <LiveCheckbox name="closed" label="Mostrar encerradas" checked={showClosed} />
         </div>
       </div>
 
@@ -144,7 +151,9 @@ export default async function TarefasPage({
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-semibold">{task.title}</p>
+                    <p className="truncate text-sm font-semibold">
+                      #{task.id} - {task.title}
+                    </p>
                     <Badge tone={statusTone(task.status)}>{statusLabel[task.status] || task.status}</Badge>
                     {overdue && <Badge tone="danger">Atrasada</Badge>}
                   </div>

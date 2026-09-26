@@ -57,7 +57,7 @@ export default async function TarefaDetailPage({
       </Link>
       <PageHeader
         eyebrow="Tarefa"
-        title={task.title}
+        title={`#${task.id} - ${task.title}`}
         description={`Criada em ${formatDate(task.created_at)} · atualizada em ${formatDate(task.updated_at)}`}
         action={<Badge tone={statusTone(task.status)}>{statusLabel[task.status] || task.status}</Badge>}
       />
