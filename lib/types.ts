@@ -124,6 +124,7 @@ export type StaleConversation = {
   created_at: string;
   message_count: number;
   inactive_days: number;
+  blocked?: boolean;
 };
 
 export type StaleConversationsResponse = {

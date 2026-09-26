@@ -22,7 +22,7 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
     <PageHeader
       eyebrow="Armazenamento"
       title="Limpeza"
-      description="Conversas sem atividade recente para liberar espaço no banco. O padrão é 30 dias sem mensagens."
+      description="Conversas bloqueadas e conversas sem atividade recente para liberar espaço no banco. O padrão de inatividade é 30 dias."
       action={<Badge tone={conversations.length ? "warning" : "success"}>{conversations.length ? `${conversations.length} candidatas` : "Nada pendente"}</Badge>}
     />
 
@@ -30,7 +30,7 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
 
     <section className="mb-6 rounded-2xl border border-line bg-white p-6">
       <div className="flex items-center gap-2"><HardDrive size={18} className="text-brand" /><h2 className="font-semibold">Filtro de inatividade</h2></div>
-      <p className="mt-2 text-sm text-muted">Lista conversas cuja última mensagem (ou criação, se vazia) é mais antiga que o período escolhido.</p>
+      <p className="mt-2 text-sm text-muted">Conversas bloqueadas aparecem sempre no topo. As demais entram quando a última mensagem (ou criação, se vazia) é mais antiga que o período escolhido.</p>
       <form className="mt-5 flex flex-wrap items-end gap-3">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Dias sem mensagem</span>
@@ -55,9 +55,11 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
               <div className="flex flex-wrap items-center gap-2">
                 <p className="truncate text-sm font-semibold">{title}</p>
                 <Badge tone="neutral">{kind}</Badge>
+                {conversation.blocked && <Badge tone="warning">Bloqueada</Badge>}
               </div>
               <p className="mt-1 text-xs text-muted">
-                {conversation.message_count.toLocaleString("pt-BR")} mensagens · inativa há {conversation.inactive_days} dias
+                {conversation.message_count.toLocaleString("pt-BR")} mensagens
+                {conversation.blocked ? " · bloqueada" : ` · inativa há ${conversation.inactive_days} dias`}
                 {conversation.last_message_at ? ` · última ${formatDate(conversation.last_message_at)}` : " · sem mensagens"}
               </p>
             </div>

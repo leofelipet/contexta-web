@@ -1,9 +1,14 @@
+"use client";
+
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Ban, Search } from "lucide-react";
 import { Avatar } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 import { messageDisplay } from "@/lib/message-display";
 import type { Conversation } from "@/lib/types";
+
+const SCROLL_KEY = "contexta:conversations-list-scroll";
 
 export function ConversationList({
   conversations,
@@ -22,19 +27,43 @@ export function ConversationList({
   blockedConversationIds?: string[];
   blockedContactIds?: string[];
 }) {
+  const listRef = useRef<HTMLDivElement>(null);
   const blockedConversations = new Set(blockedConversationIds);
   const blockedContacts = new Set(blockedContactIds);
 
+  useEffect(() => {
+    const viewport = listRef.current;
+    if (!viewport) return;
+    const saved = sessionStorage.getItem(SCROLL_KEY);
+    if (saved != null) {
+      const top = Number(saved);
+      if (!Number.isNaN(top)) viewport.scrollTop = top;
+    }
+    function persist() {
+      if (listRef.current) sessionStorage.setItem(SCROLL_KEY, String(listRef.current.scrollTop));
+    }
+    viewport.addEventListener("scroll", persist, { passive: true });
+    return () => viewport.removeEventListener("scroll", persist);
+  }, [selectedId]);
+
   return <section className={`w-full shrink-0 border-r border-line bg-white lg:w-[360px] ${selectedId ? "hidden lg:block" : "block"}`}>
     <header className="border-b border-line p-4"><h1 className="text-xl font-semibold tracking-tight">Conversas</h1><form className="relative mt-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" size={17} /><input name="q" defaultValue={query} placeholder="Buscar conversa" className="focus-ring h-10 w-full rounded-xl bg-slate-100 pl-10 pr-3 text-sm" /></form></header>
-    <div className="scrollbar overflow-y-auto lg:h-[calc(100vh-97px)]">{conversations.length ? conversations.map((conversation) => {
+    <div ref={listRef} className="scrollbar overflow-y-auto lg:h-[calc(100vh-97px)]">{conversations.length ? conversations.map((conversation) => {
       const name = conversation.title || "Conversa sem título";
       const message = conversation.last_message;
       const preview = message ? messageDisplay(message).text : "Sem mensagens";
       const selected = selectedId === conversation.id;
       const blocked = blockedConversations.has(conversation.id)
         || Boolean(conversation.contact_id && blockedContacts.has(conversation.contact_id));
-      return <Link key={conversation.id} href={`/conversations/${encodeURIComponent(conversation.id)}`} className={`focus-ring flex gap-3 border-b border-line p-4 transition ${selected ? "bg-brand-soft" : "hover:bg-slate-50"}`}>
+      return <Link
+        key={conversation.id}
+        href={`/conversations/${encodeURIComponent(conversation.id)}`}
+        scroll={false}
+        onClick={() => {
+          if (listRef.current) sessionStorage.setItem(SCROLL_KEY, String(listRef.current.scrollTop));
+        }}
+        className={`focus-ring flex gap-3 border-b border-line p-4 transition ${selected ? "bg-brand-soft" : "hover:bg-slate-50"}`}
+      >
         <Avatar name={name} />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
