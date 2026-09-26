@@ -51,6 +51,7 @@ export type Dashboard = {
   last_message_at?: string | null;
   last_webhook_at?: string | null;
   uazapi_status: string;
+  version: string;
 };
 
 export type UazapiIntegration = {
@@ -78,4 +79,13 @@ export type Activity = {
   entity_id?: string;
   metadata: Record<string, unknown>;
   occurred_at: string;
+};
+
+export type DenylistEntry = {
+  id: string;
+  target_type: "conversation" | "contact" | string;
+  target_id: string;
+  target_label?: string | null;
+  reason?: string | null;
+  created_at: string;
 };

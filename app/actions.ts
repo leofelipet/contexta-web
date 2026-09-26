@@ -35,3 +35,26 @@ export async function configureWebhook() {
   await apiFetch<{ configured: true }>("/api/v1/integrations/uazapi/configure-webhook", { method: "POST" });
   redirect("/whatsapp?configured=1");
 }
+
+export async function addDenylistEntry(formData: FormData) {
+  await requireSession();
+  const targetType = String(formData.get("target_type") || "").trim();
+  const targetId = String(formData.get("target_id") || "").trim();
+  const reason = String(formData.get("reason") || "").trim();
+  await apiFetch("/api/v1/denylist", {
+    method: "POST",
+    body: {
+      target_type: targetType,
+      target_id: targetId,
+      ...(reason ? { reason } : {}),
+    },
+  });
+  redirect("/denylist?added=1");
+}
+
+export async function removeDenylistEntry(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/denylist/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/denylist?removed=1");
+}

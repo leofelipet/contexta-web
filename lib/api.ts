@@ -12,24 +12,35 @@ export class ApiError extends Error {
 
 export async function apiFetch<T>(path: string, options: {
   query?: Record<string, QueryValue>;
-  method?: "GET" | "POST";
+  method?: "GET" | "POST" | "DELETE";
+  body?: unknown;
 } = {}): Promise<T> {
   await requireSession();
   const base = process.env.CONTEXTA_API_URL;
   const token = process.env.CONTEXTA_API_TOKEN;
   if (!base || !token) throw new Error("Configuração do backend ausente");
 
+  const headers: Record<string, string> = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/json",
+  };
+  if (options.body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+
   let response: Response;
   try {
     response = await fetch(buildApiUrl(base, path, options.query), {
       method: options.method ?? "GET",
-      headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+      headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
       cache: "no-store",
     });
   } catch {
     throw new ApiError(503);
   }
   if (!response.ok) throw new ApiError(response.status);
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 

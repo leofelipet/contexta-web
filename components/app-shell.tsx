@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, Bot, ContactRound, LogOut, Menu, MessageCircle, ScrollText, Search, Unplug, X } from "lucide-react";
+import { Ban, BarChart3, Bot, ContactRound, LogOut, Menu, MessageCircle, ScrollText, Search, Unplug, X } from "lucide-react";
 import { useState } from "react";
 import { logout } from "@/app/actions";
 
@@ -11,6 +11,7 @@ const items = [
   { href: "/conversations", label: "Conversas", icon: MessageCircle },
   { href: "/contacts", label: "Contatos", icon: ContactRound },
   { href: "/search", label: "Busca", icon: Search },
+  { href: "/denylist", label: "Deny list", icon: Ban },
   { href: "/whatsapp", label: "WhatsApp", icon: Unplug },
   { href: "/mcp", label: "MCP", icon: Bot },
   { href: "/logs", label: "Atividade", icon: ScrollText },
