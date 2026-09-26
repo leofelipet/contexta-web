@@ -59,3 +59,10 @@ export async function removeDenylistEntry(formData: FormData) {
   await apiFetch(`/api/v1/denylist/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/denylist?removed=1");
 }
+
+export async function deleteStaleConversation(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/conversations/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/limpeza?deleted=1");
+}

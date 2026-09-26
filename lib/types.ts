@@ -115,3 +115,19 @@ export type SystemOverview = {
     transcription_failed: number;
   };
 };
+
+export type StaleConversation = {
+  id: string;
+  type: string;
+  title?: string | null;
+  last_message_at?: string | null;
+  created_at: string;
+  message_count: number;
+  inactive_days: number;
+};
+
+export type StaleConversationsResponse = {
+  data: StaleConversation[];
+  next_cursor?: string | null;
+  days: number;
+};

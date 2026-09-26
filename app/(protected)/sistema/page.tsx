@@ -93,6 +93,7 @@ export default async function SistemaPage() {
         <p className="mt-1 text-sm text-muted">Detalhes de produto e integrações</p>
         <div className="mt-5 space-y-2">
           <Shortcut href="/dashboard" icon={Activity} label="Visão geral" />
+          <Shortcut href="/limpeza" icon={HardDrive} label="Limpeza de conversas" />
           <Shortcut href="/whatsapp" icon={PlugZap} label="WhatsApp" />
           <Shortcut href="/mcp" icon={Bot} label="MCP" />
         </div>
