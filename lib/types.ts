@@ -89,3 +89,29 @@ export type DenylistEntry = {
   reason?: string | null;
   created_at: string;
 };
+
+export type SystemOverview = {
+  generated_at: string;
+  version: string;
+  started_at: string;
+  database: {
+    size_bytes: number;
+    messages_last_24h: number;
+    last_message_at?: string | null;
+    last_webhook_at?: string | null;
+    migration_version?: number | null;
+    denylist_entries: number;
+  };
+  pool: {
+    max_connections: number;
+    total_connections: number;
+    idle_connections: number;
+    acquired_connections: number;
+  };
+  queues: {
+    transcription_pending: number;
+    transcription_processing: number;
+    transcription_retry: number;
+    transcription_failed: number;
+  };
+};
