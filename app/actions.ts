@@ -132,3 +132,51 @@ export async function deleteTask(formData: FormData) {
   await apiFetch(`/api/v1/tasks/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/tarefas?deleted=1");
 }
+
+export async function createMemory(formData: FormData) {
+  await requireSession();
+  const title = String(formData.get("title") || "").trim();
+  const content = String(formData.get("content") || "").trim();
+  const source = String(formData.get("source") || "").trim() || "note";
+  const messageId = String(formData.get("message_id") || "").trim();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  await apiFetch("/api/v1/memories", {
+    method: "POST",
+    body: {
+      title,
+      content,
+      source,
+      ...(messageId ? { message_id: messageId } : {}),
+      ...(conversationId ? { conversation_id: conversationId } : {}),
+      ...(contactId ? { contact_id: contactId } : {}),
+    },
+  });
+  redirect("/memorias?created=1");
+}
+
+export async function updateMemory(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  const title = String(formData.get("title") || "").trim();
+  const content = String(formData.get("content") || "").trim();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  await apiFetch(`/api/v1/memories/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: {
+      title,
+      content,
+      conversation_id: conversationId,
+      contact_id: contactId,
+    },
+  });
+  redirect(`/memorias/${encodeURIComponent(id)}?updated=1`);
+}
+
+export async function deleteMemory(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/memories/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/memorias?deleted=1");
+}

@@ -177,3 +177,32 @@ export type Task = {
   created_at: string;
   updated_at: string;
 };
+
+export type MemorySource = "note" | "message";
+export type EmbeddingStatus = "pending" | "ready" | "failed";
+
+export type Memory = {
+  id: string;
+  title?: string;
+  content: string;
+  source: MemorySource | string;
+  message_id?: string;
+  conversation_id?: string;
+  contact_id?: string;
+  conversation_title?: string;
+  contact_name?: string;
+  embedding_status: EmbeddingStatus | string;
+  embedding_model?: string;
+  embedding_error?: string;
+  created_at: string;
+  updated_at: string;
+};
+
+export type MemorySearchHit = {
+  memory: Memory;
+  score: number;
+};
+
+export type MemorySearchResult = {
+  hits: MemorySearchHit[];
+};

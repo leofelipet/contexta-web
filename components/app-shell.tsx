@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
+  BookMarked,
   CheckSquare,
   ContactRound,
   HardDrive,
@@ -39,6 +40,7 @@ const groups: NavGroup[] = [
       { href: "/contacts", label: "Contatos", icon: ContactRound },
       { href: "/search", label: "Busca", icon: Search },
       { href: "/tarefas", label: "Tarefas", icon: CheckSquare },
+      { href: "/memorias", label: "Memórias", icon: BookMarked },
     ],
   },
   {
