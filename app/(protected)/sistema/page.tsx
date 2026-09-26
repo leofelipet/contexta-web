@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Activity, Database, Gauge, HardDrive, Layers3, PlugZap, Server, ShieldCheck, CircleAlert } from "lucide-react";
-import { SectionTabs, sistemaTabs } from "@/components/section-tabs";
+import { SectionTabs } from "@/components/section-tabs";
+import { sistemaTabs } from "@/components/section-tab-items";
 import { Badge, PageHeader } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 import { formatBytes, formatDate, formatUptime } from "@/lib/format";
@@ -27,7 +28,7 @@ export default async function SistemaPage() {
       description="Saúde da API, ingestão e armazenamento em um só lugar."
       action={<Badge tone={attention ? "warning" : "success"}>{attention ? "Atenção" : "Operacional"}</Badge>}
     />
-    <SectionTabs items={[...sistemaTabs]} />
+    <SectionTabs items={sistemaTabs} />
 
     <section className={`mb-6 flex items-start gap-3 rounded-2xl border px-4 py-4 ${attention ? "border-amber-200 bg-amber-50" : "border-emerald-200 bg-emerald-50"}`}>
       <span className={attention ? "text-amber-700" : "text-emerald-700"}>{attention ? <CircleAlert size={20} /> : <ShieldCheck size={20} />}</span>

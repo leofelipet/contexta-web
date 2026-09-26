@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { SectionTabs, sistemaTabs } from "@/components/section-tabs";
+import { SectionTabs } from "@/components/section-tabs";
+import { sistemaTabs } from "@/components/section-tab-items";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { FilterBar, SelectFilter } from "@/components/filter-bar";
 import { apiFetch } from "@/lib/api";
@@ -16,7 +17,7 @@ export default async function LogsPage({ searchParams }: { searchParams: Promise
   return (
     <div className="mx-auto max-w-6xl p-5 md:p-9 lg:p-12">
       <PageHeader eyebrow="Sistema" title="Atividade" description="Eventos recentes da aplicação e das integrações." />
-      <SectionTabs items={[...sistemaTabs]} />
+      <SectionTabs items={sistemaTabs} />
       <FilterBar showSearch={false}>
         <SelectFilter name="category" label="Categoria" value={filters.category} options={[["", "Todas as categorias"], ["webhook", "Webhook"], ["uazapi", "UAZAPI"], ["mcp", "MCP"], ["admin", "Admin"]]} />
         <SelectFilter name="level" label="Nível" value={filters.level} options={[["", "Todos os níveis"], ["info", "Informação"], ["warning", "Alerta"], ["error", "Erro"]]} />

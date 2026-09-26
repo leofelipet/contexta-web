@@ -24,18 +24,3 @@ export function SectionTabs({ items }: { items: { href: string; label: string }[
     </div>
   );
 }
-
-export const manutencaoTabs = [
-  { href: "/denylist", label: "Deny list" },
-  { href: "/limpeza", label: "Limpeza" },
-] as const;
-
-export const integracoesTabs = [
-  { href: "/whatsapp", label: "WhatsApp" },
-  { href: "/mcp", label: "MCP" },
-] as const;
-
-export const sistemaTabs = [
-  { href: "/sistema", label: "Saúde" },
-  { href: "/logs", label: "Atividade" },
-] as const;

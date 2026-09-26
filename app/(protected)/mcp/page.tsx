@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bot, KeyRound, Wrench } from "lucide-react";
-import { SectionTabs, integracoesTabs } from "@/components/section-tabs";
+import { SectionTabs } from "@/components/section-tabs";
+import { integracoesTabs } from "@/components/section-tab-items";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -18,7 +19,7 @@ export default async function McpPage() {
         description="Disponibilidade e ferramentas expostas para agentes autorizados."
         action={<Badge tone={data.enabled ? "success" : "neutral"}>{data.enabled ? "Habilitado" : "Desabilitado"}</Badge>}
       />
-      <SectionTabs items={[...integracoesTabs]} />
+      <SectionTabs items={integracoesTabs} />
       <section className="rounded-2xl border border-line bg-white p-6">
         <div className="grid gap-6 md:grid-cols-3">
           <Info icon={<Bot />} label="Endpoint" value={data.endpoint} />

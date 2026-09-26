@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Check, Trash2 } from "lucide-react";
 import { removeDenylistEntry } from "@/app/actions";
 import { DenylistAddForm } from "@/components/denylist-add-form";
-import { SectionTabs, manutencaoTabs } from "@/components/section-tabs";
+import { SectionTabs } from "@/components/section-tabs";
+import { manutencaoTabs } from "@/components/section-tab-items";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -26,7 +27,7 @@ export default async function DenylistPage({ searchParams }: { searchParams: Pro
 
   return <div className="mx-auto max-w-5xl p-5 md:p-9 lg:p-12">
     <PageHeader eyebrow="Manutenção" title="Deny list" description="Bloqueie o salvamento de novas mensagens de grupos ou conversas diretas com contatos específicos." />
-    <SectionTabs items={[...manutencaoTabs]} />
+    <SectionTabs items={manutencaoTabs} />
     {query.added === "1" && <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"><Check size={17} />Entrada adicionada à deny list.</p>}
     {query.removed === "1" && <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"><Check size={17} />Entrada removida da deny list.</p>}
 

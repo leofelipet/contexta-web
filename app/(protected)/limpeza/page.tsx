@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, HardDrive } from "lucide-react";
 import { DeleteConversationButton } from "@/components/delete-conversation-button";
-import { SectionTabs, manutencaoTabs } from "@/components/section-tabs";
+import { SectionTabs } from "@/components/section-tabs";
+import { manutencaoTabs } from "@/components/section-tab-items";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -26,7 +27,7 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
       description="Conversas bloqueadas e conversas sem atividade recente para liberar espaço no banco. O padrão de inatividade é 30 dias."
       action={<Badge tone={conversations.length ? "warning" : "success"}>{conversations.length ? `${conversations.length} candidatas` : "Nada pendente"}</Badge>}
     />
-    <SectionTabs items={[...manutencaoTabs]} />
+    <SectionTabs items={manutencaoTabs} />
 
     {query.deleted === "1" && <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"><Check size={17} />Conversa apagada com sucesso.</p>}
 

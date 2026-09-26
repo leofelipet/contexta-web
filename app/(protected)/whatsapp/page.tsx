@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Check, Radio, Webhook } from "lucide-react";
 import { configureWebhook } from "@/app/actions";
-import { SectionTabs, integracoesTabs } from "@/components/section-tabs";
+import { SectionTabs } from "@/components/section-tabs";
+import { integracoesTabs } from "@/components/section-tab-items";
 import { Badge, PageHeader } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -13,7 +14,7 @@ export default async function WhatsappPage({ searchParams }: { searchParams: Pro
   const [data, query] = await Promise.all([apiFetch<UazapiIntegration>("/api/v1/integrations/uazapi"), searchParams]);
   return <div className="mx-auto max-w-5xl p-5 md:p-9 lg:p-12">
     <PageHeader eyebrow="Integrações" title="WhatsApp" description="Estado da instância e entrega de eventos para a Contexta." />
-    <SectionTabs items={[...integracoesTabs]} />
+    <SectionTabs items={integracoesTabs} />
     {query.configured === "1" && <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"><Check size={17} />Webhook configurado com sucesso.</p>}
     <section className="grid gap-5 lg:grid-cols-2">
       <div className="rounded-2xl border border-line bg-white p-6">
