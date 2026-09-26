@@ -48,10 +48,38 @@ export type Dashboard = {
   contacts: number;
   conversations: number;
   messages: number;
+  messages_inbound: number;
+  messages_outbound: number;
+  messages_last_7d: number;
+  messages_last_30d: number;
+  groups: number;
+  directs: number;
+  active_conversations_7d: number;
   last_message_at?: string | null;
   last_webhook_at?: string | null;
   uazapi_status: string;
   version: string;
+  traffic: DashboardTrafficDay[];
+  message_types: DashboardNamedCount[];
+  top_conversations: DashboardTopConversation[];
+};
+
+export type DashboardTrafficDay = {
+  date: string;
+  inbound: number;
+  outbound: number;
+};
+
+export type DashboardNamedCount = {
+  name: string;
+  count: number;
+};
+
+export type DashboardTopConversation = {
+  id: string;
+  title: string;
+  type: string;
+  message_count: number;
 };
 
 export type UazapiIntegration = {
