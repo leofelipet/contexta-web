@@ -41,6 +41,7 @@ export async function addDenylistEntry(formData: FormData) {
   const targetType = String(formData.get("target_type") || "").trim();
   const targetId = String(formData.get("target_id") || "").trim();
   const reason = String(formData.get("reason") || "").trim();
+  const redirectTo = String(formData.get("redirect_to") || "").trim() || "/denylist?added=1";
   await apiFetch("/api/v1/denylist", {
     method: "POST",
     body: {
@@ -49,7 +50,7 @@ export async function addDenylistEntry(formData: FormData) {
       ...(reason ? { reason } : {}),
     },
   });
-  redirect("/denylist?added=1");
+  redirect(redirectTo.startsWith("/") ? redirectTo : "/denylist?added=1");
 }
 
 export async function removeDenylistEntry(formData: FormData) {
