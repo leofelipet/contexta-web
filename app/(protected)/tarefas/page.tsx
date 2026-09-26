@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { TaskCreateForm } from "@/components/task-create-form";
+import { LiveCheckbox, LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -88,33 +89,45 @@ export default async function TarefasPage({
 
       <TaskCreateForm conversations={conversations} contacts={contacts} />
 
-      <form className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto_auto]">
+      <div className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_1fr_auto_auto]">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Busca</span>
-          <input name="q" defaultValue={query.q || ""} placeholder="Título ou descrição" className="focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm" />
+          <LiveSearchInput
+            name="q"
+            defaultValue={query.q || ""}
+            placeholder="Título ou descrição"
+            className="focus-ring h-10 w-full rounded-xl border border-line bg-white pl-10 pr-3 text-sm"
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Empresa</span>
-          <input name="company" defaultValue={query.company || ""} placeholder="Filtrar empresa" className="focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm" />
+          <LiveSearchInput
+            name="company"
+            defaultValue={query.company || ""}
+            placeholder="Filtrar empresa"
+            className="focus-ring h-10 w-full rounded-xl border border-line bg-white pl-10 pr-3 text-sm"
+          />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Status</span>
-          <select name="status" defaultValue={query.status || ""} className="focus-ring w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm">
-            <option value="">Todos</option>
-            <option value="pending">Pendente</option>
-            <option value="in_progress">Em andamento</option>
-            <option value="done">Concluída</option>
-            <option value="cancelled">Cancelada</option>
-          </select>
+          <LiveSelect
+            name="status"
+            label="Status"
+            value={query.status || ""}
+            options={[
+              ["", "Todos"],
+              ["pending", "Pendente"],
+              ["in_progress", "Em andamento"],
+              ["done", "Concluída"],
+              ["cancelled", "Cancelada"],
+            ]}
+            className="focus-ring h-10 w-full rounded-xl border border-line bg-white px-3 text-sm"
+          />
         </label>
-        <label className="flex items-end gap-2 text-sm">
-          <input type="checkbox" name="overdue" value="1" defaultChecked={query.overdue === "1"} className="mb-3 size-4 rounded border-line" />
-          <span className="mb-2.5">Só atrasadas</span>
-        </label>
-        <div className="flex items-end">
-          <button className="focus-ring w-full rounded-xl border border-line bg-white px-4 py-2.5 text-sm font-semibold hover:bg-slate-50">Filtrar</button>
+        <div className="flex items-end pb-2">
+          <LiveCheckbox name="overdue" label="Só atrasadas" checked={query.overdue === "1"} />
         </div>
-      </form>
+      </div>
 
       {taskList.length ? (
         <div className="overflow-hidden rounded-2xl border border-line bg-white">

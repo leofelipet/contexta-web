@@ -67,6 +67,16 @@ export async function deleteStaleConversation(formData: FormData) {
   redirect("/limpeza?deleted=1");
 }
 
+export async function deleteStaleConversationsBulk(formData: FormData) {
+  await requireSession();
+  const ids = formData.getAll("ids").map((value) => String(value).trim()).filter(Boolean);
+  await apiFetch("/api/v1/conversations/bulk-delete", {
+    method: "POST",
+    body: { ids },
+  });
+  redirect(`/limpeza?deleted=${ids.length}`);
+}
+
 export async function createTask(formData: FormData) {
   await requireSession();
   const title = String(formData.get("title") || "").trim();

@@ -1,12 +1,10 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Check, HardDrive } from "lucide-react";
-import { DeleteConversationButton } from "@/components/delete-conversation-button";
+import { LimpezaList } from "@/components/limpeza-list";
 import { SectionTabs } from "@/components/section-tabs";
 import { manutencaoTabs } from "@/components/section-tab-items";
-import { Badge, EmptyState, PageHeader } from "@/components/ui";
+import { Badge, PageHeader } from "@/components/ui";
 import { apiFetch } from "@/lib/api";
-import { formatDate } from "@/lib/format";
 import type { StaleConversationsResponse } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Limpeza" };
@@ -19,6 +17,7 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
   });
   const conversations = payload.data || [];
   const totalMessages = conversations.reduce((sum, item) => sum + (item.message_count || 0), 0);
+  const deletedCount = Number(query.deleted) > 0 ? Number(query.deleted) : 0;
 
   return <div className="mx-auto max-w-5xl p-5 md:p-9 lg:p-12">
     <PageHeader
@@ -29,11 +28,16 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
     />
     <SectionTabs items={manutencaoTabs} />
 
-    {query.deleted === "1" && <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700"><Check size={17} />Conversa apagada com sucesso.</p>}
+    {deletedCount > 0 && (
+      <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+        <Check size={17} />
+        {deletedCount === 1 ? "Conversa apagada com sucesso." : `${deletedCount.toLocaleString("pt-BR")} conversas apagadas com sucesso.`}
+      </p>
+    )}
 
     <section className="mb-6 rounded-2xl border border-line bg-white p-6">
       <div className="flex items-center gap-2"><HardDrive size={18} className="text-brand" /><h2 className="font-semibold">Filtro de inatividade</h2></div>
-      <p className="mt-2 text-sm text-muted">Conversas bloqueadas aparecem sempre no topo. As demais entram quando a última mensagem (ou criação, se vazia) é mais antiga que o período escolhido.</p>
+      <p className="mt-2 text-sm text-muted">Conversas bloqueadas aparecem sempre no topo. As demais entram quando a última mensagem (ou criação, se vazia) é mais antiga que o período escolhido. Selecione várias para apagar em massa.</p>
       <form className="mt-5 flex flex-wrap items-end gap-3">
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Dias sem mensagem</span>
@@ -48,44 +52,6 @@ export default async function LimpezaPage({ searchParams }: { searchParams: Prom
       )}
     </section>
 
-    {conversations.length ? <div className="overflow-hidden rounded-2xl border border-line bg-white">
-      {conversations.map((conversation) => {
-        const title = conversation.title || "Conversa sem título";
-        const kind = conversation.type === "group" ? "Grupo" : conversation.type === "direct" ? "Direta" : conversation.type;
-        return (
-          <div key={conversation.id} className="flex flex-wrap items-center gap-4 border-b border-line p-4 last:border-0">
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="truncate text-sm font-semibold">{title}</p>
-                <Badge tone="neutral">{kind}</Badge>
-                {conversation.blocked && <Badge tone="warning">Bloqueada</Badge>}
-              </div>
-              <p className="mt-1 text-xs text-muted">
-                {conversation.message_count.toLocaleString("pt-BR")} mensagens
-                {conversation.blocked ? " · bloqueada" : ` · inativa há ${conversation.inactive_days} dias`}
-                {conversation.last_message_at ? ` · última ${formatDate(conversation.last_message_at)}` : " · sem mensagens"}
-              </p>
-            </div>
-            <Link href={`/conversations/${encodeURIComponent(conversation.id)}`} className="focus-ring rounded-lg px-3 py-2 text-xs font-semibold text-brand hover:bg-brand-soft">
-              Abrir
-            </Link>
-            <DeleteConversationButton
-              conversationId={conversation.id}
-              conversationTitle={title}
-              messageCount={conversation.message_count}
-            />
-          </div>
-        );
-      })}
-    </div> : <EmptyState title="Nenhuma conversa inativa" description={`Não há conversas com mais de ${days} dias sem mensagens.`} />}
-
-    {payload.next_cursor && (
-      <Link
-        href={`?${new URLSearchParams({ days: String(days), cursor: payload.next_cursor }).toString()}`}
-        className="focus-ring mt-5 inline-flex rounded-xl border border-line bg-white px-4 py-2 text-sm font-semibold"
-      >
-        Próxima página
-      </Link>
-    )}
+    <LimpezaList conversations={conversations} days={days} nextCursor={payload.next_cursor} />
   </div>;
 }

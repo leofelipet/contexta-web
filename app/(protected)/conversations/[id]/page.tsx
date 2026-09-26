@@ -9,11 +9,26 @@ import { apiFetch, itemsFrom } from "@/lib/api";
 import type { Conversation, DenylistEntry, Message, Paginated } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Conversa" };
-export default async function ConversationPage({ params }: { params: Promise<{ id: string }> }) {
+
+export default async function ConversationPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ q?: string; type?: string; contact_id?: string; cursor?: string }>;
+}) {
   const { id } = await params;
+  const filters = await searchParams;
   const encodedId = encodeURIComponent(id);
   const [listPayload, conversation, messagePayload, denylistPayload] = await Promise.all([
-    apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 100 } }),
+    apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", {
+      query: {
+        query: filters.q,
+        type: filters.type,
+        contact_id: filters.contact_id,
+        limit: 100,
+      },
+    }),
     apiFetch<Conversation>(`/api/v1/conversations/${encodedId}`),
     apiFetch<Message[] | Paginated<Message>>(`/api/v1/conversations/${encodedId}/messages`, { query: { limit: 50 } }),
     apiFetch<DenylistEntry[] | Paginated<DenylistEntry>>("/api/v1/denylist", { query: { limit: 200 } }),
@@ -26,18 +41,28 @@ export default async function ConversationPage({ params }: { params: Promise<{ i
   const blockedContactIds = denylist.filter((entry) => entry.target_type === "contact").map((entry) => entry.target_id);
   const alreadyBlocked = blockedConversationIds.includes(id)
     || Boolean(conversation.contact_id && blockedContactIds.includes(conversation.contact_id));
+
+  const backParams = new URLSearchParams();
+  if (filters.q) backParams.set("q", filters.q);
+  if (filters.type) backParams.set("type", filters.type);
+  if (filters.contact_id) backParams.set("contact_id", filters.contact_id);
+  const backHref = backParams.size ? `/conversations?${backParams}` : "/conversations";
+
   return (
     <div className="flex h-[calc(100vh-64px)] overflow-hidden md:h-screen">
       <ConversationList
         conversations={itemsFrom(listPayload)}
         selectedId={id}
+        query={filters.q}
+        type={filters.type}
+        contactId={filters.contact_id}
         nextCursor={Array.isArray(listPayload) ? null : listPayload.next_cursor}
         blockedConversationIds={blockedConversationIds}
         blockedContactIds={blockedContactIds}
       />
       <section className="flex min-w-0 flex-1 flex-col bg-chat">
         <header className="flex h-[70px] shrink-0 items-center gap-3 border-b border-line bg-white px-4">
-          <Link href="/conversations" aria-label="Voltar" className="focus-ring rounded-lg p-2 text-muted lg:hidden"><ArrowLeft size={20} /></Link>
+          <Link href={backHref} aria-label="Voltar" className="focus-ring rounded-lg p-2 text-muted lg:hidden"><ArrowLeft size={20} /></Link>
           <Avatar name={name} size="sm" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-sm font-semibold">{name}</h1>
