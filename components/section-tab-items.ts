@@ -6,6 +6,7 @@ export const manutencaoTabs = [
 export const integracoesTabs = [
   { href: "/whatsapp", label: "WhatsApp" },
   { href: "/mcp", label: "MCP" },
+  { href: "/email", label: "E-mail" },
 ];
 
 export const sistemaTabs = [

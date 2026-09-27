@@ -97,6 +97,30 @@ export type McpStatus = {
   last_access_at?: string | null;
 };
 
+export type EmailAccount = {
+  id: string;
+  name: string;
+  address: string;
+  username: string;
+  imap_host: string;
+  imap_port: number;
+  imap_use_tls: boolean;
+  smtp_host: string;
+  smtp_port: number;
+  smtp_use_tls: boolean;
+  save_sent_copy: boolean;
+  enabled: boolean;
+  created_at: string;
+  updated_at: string;
+};
+
+export type EmailTestResult = {
+  imap_ok: boolean;
+  smtp_ok: boolean;
+  imap_error?: string;
+  smtp_error?: string;
+};
+
 export type Activity = {
   id: string;
   category: string;

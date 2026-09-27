@@ -3,7 +3,9 @@
 import { compare } from "bcryptjs";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { ApiError, apiFetch } from "@/lib/api";
+import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
+import type { EmailAccount, EmailTestResult } from "@/lib/types";
 import { clearSession, createSession, requireSession } from "@/lib/session";
 import { clearClientAttempts, loginAllowed, recordFailedLogin } from "@/lib/login-rate-limit";
 
@@ -201,4 +203,62 @@ export async function deleteMemory(formData: FormData) {
   const id = String(formData.get("id") || "").trim();
   await apiFetch(`/api/v1/memories/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/memorias?deleted=1");
+}
+
+export type EmailFormState = { error?: string };
+
+function emailFormError(error: unknown): EmailFormState {
+  if (error instanceof ApiError) return { error: emailApiErrorMessage(error.status, error.detail) };
+  return { error: emailApiErrorMessage(0) };
+}
+
+export async function createEmailAccount(_: EmailFormState, formData: FormData): Promise<EmailFormState> {
+  await requireSession();
+  let account: EmailAccount;
+  try {
+    account = await apiFetch<EmailAccount>("/api/v1/email-accounts", {
+      method: "POST",
+      body: createEmailAccountBody(formData),
+    });
+  } catch (error) {
+    return emailFormError(error);
+  }
+  redirect(`/email/${encodeURIComponent(account.id)}?created=1`);
+}
+
+export async function updateEmailAccount(_: EmailFormState, formData: FormData): Promise<EmailFormState> {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  try {
+    await apiFetch<EmailAccount>(`/api/v1/email-accounts/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: updateEmailAccountBody(formData),
+    });
+  } catch (error) {
+    return emailFormError(error);
+  }
+  redirect(`/email/${encodeURIComponent(id)}?updated=1`);
+}
+
+export async function deleteEmailAccount(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/email-accounts/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/email?deleted=1");
+}
+
+export type EmailTestState = { result?: EmailTestResult; error?: string };
+
+export async function testEmailAccount(_: EmailTestState, formData: FormData): Promise<EmailTestState> {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  try {
+    const result = await apiFetch<EmailTestResult>(`/api/v1/email-accounts/${encodeURIComponent(id)}/test`, {
+      method: "POST",
+      acceptStatus: [502],
+    });
+    return { result };
+  } catch (error) {
+    return emailFormError(error);
+  }
 }
