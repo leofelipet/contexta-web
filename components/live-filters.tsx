@@ -31,11 +31,14 @@ function LiveSearchInputInner({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [value, setValue] = useState(defaultValue);
+  const [syncedDefault, setSyncedDefault] = useState(defaultValue);
   const [, startTransition] = useTransition();
 
-  useEffect(() => {
+  // Resync when navigation changes the URL value (e.g. back button or a filter reset).
+  if (defaultValue !== syncedDefault) {
+    setSyncedDefault(defaultValue);
     setValue(defaultValue);
-  }, [defaultValue]);
+  }
 
   useEffect(() => {
     const handle = window.setTimeout(() => {

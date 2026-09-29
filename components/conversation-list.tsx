@@ -45,12 +45,15 @@ function ConversationListInner({
   const searchParams = useSearchParams();
   const [, startTransition] = useTransition();
   const [searchValue, setSearchValue] = useState(query || "");
+  const [syncedQuery, setSyncedQuery] = useState(query || "");
   const blockedConversations = useMemo(() => new Set(blockedConversationIds), [blockedConversationIds]);
   const blockedContacts = useMemo(() => new Set(blockedContactIds), [blockedContactIds]);
 
-  useEffect(() => {
+  // Resync when navigation changes the URL query (e.g. back button).
+  if ((query || "") !== syncedQuery) {
+    setSyncedQuery(query || "");
     setSearchValue(query || "");
-  }, [query]);
+  }
 
   useEffect(() => {
     const viewport = listRef.current;
