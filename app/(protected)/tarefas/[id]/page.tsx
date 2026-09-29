@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Check } from "lucide-react";
+import { ArrowLeft, Check, Repeat } from "lucide-react";
 import { notFound } from "next/navigation";
 import { TaskEditForm } from "@/components/task-edit-form";
 import { TaskMemoriesSection } from "@/components/task-memories-section";
@@ -65,6 +65,14 @@ export default async function TarefaDetailPage({
         <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
           <Check size={17} />Tarefa atualizada.
         </p>
+      )}
+      {task.schedule_id && (
+        <Link
+          href={`/recorrentes/${encodeURIComponent(task.schedule_id)}`}
+          className="focus-ring mb-5 flex items-center gap-2 rounded-xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand hover:underline"
+        >
+          <Repeat size={17} />Criada automaticamente pela recorrência #{task.schedule_id}
+        </Link>
       )}
       <div className="rounded-2xl border border-line bg-white p-6">
         <TaskEditForm

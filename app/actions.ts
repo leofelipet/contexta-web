@@ -5,7 +5,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ApiError, apiFetch } from "@/lib/api";
 import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
-import type { EmailAccount, EmailTestResult } from "@/lib/types";
+import { scheduleApiErrorMessage, scheduleBody, ScheduleFormError } from "@/lib/schedule-form";
+import type { EmailAccount, EmailTestResult, TaskSchedule } from "@/lib/types";
 import { clearSession, createSession, requireSession } from "@/lib/session";
 import { clearClientAttempts, loginAllowed, recordFailedLogin } from "@/lib/login-rate-limit";
 
@@ -133,6 +134,57 @@ export async function deleteTask(formData: FormData) {
   const id = String(formData.get("id") || "").trim();
   await apiFetch(`/api/v1/tasks/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/tarefas?deleted=1");
+}
+
+export type ScheduleFormState = { error?: string };
+
+function scheduleFormError(error: unknown): ScheduleFormState {
+  if (error instanceof ScheduleFormError) return { error: error.message };
+  if (error instanceof ApiError) return { error: scheduleApiErrorMessage(error.status, error.detail) };
+  return { error: scheduleApiErrorMessage(0) };
+}
+
+export async function createTaskSchedule(_: ScheduleFormState, formData: FormData): Promise<ScheduleFormState> {
+  await requireSession();
+  let schedule: TaskSchedule;
+  try {
+    schedule = await apiFetch<TaskSchedule>("/api/v1/task-schedules", {
+      method: "POST",
+      body: scheduleBody(formData, false),
+    });
+  } catch (error) {
+    return scheduleFormError(error);
+  }
+  redirect(`/recorrentes/${encodeURIComponent(schedule.id)}?created=1`);
+}
+
+export async function updateTaskSchedule(_: ScheduleFormState, formData: FormData): Promise<ScheduleFormState> {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  try {
+    await apiFetch<TaskSchedule>(`/api/v1/task-schedules/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: scheduleBody(formData, true),
+    });
+  } catch (error) {
+    return scheduleFormError(error);
+  }
+  redirect(`/recorrentes/${encodeURIComponent(id)}?updated=1`);
+}
+
+export async function setTaskScheduleEnabled(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  const enabled = formData.get("enabled") === "true";
+  await apiFetch(`/api/v1/task-schedules/${encodeURIComponent(id)}`, { method: "PATCH", body: { enabled } });
+  redirect(`/recorrentes/${encodeURIComponent(id)}?updated=1`);
+}
+
+export async function deleteTaskSchedule(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/task-schedules/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/recorrentes?deleted=1");
 }
 
 export async function attachTaskMemory(formData: FormData) {

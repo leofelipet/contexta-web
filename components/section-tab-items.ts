@@ -1,3 +1,8 @@
+export const tarefasTabs = [
+  { href: "/tarefas", label: "Tarefas" },
+  { href: "/recorrentes", label: "Recorrentes" },
+];
+
 export const manutencaoTabs = [
   { href: "/denylist", label: "Deny list" },
   { href: "/limpeza", label: "Limpeza" },

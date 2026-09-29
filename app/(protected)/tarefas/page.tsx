@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Repeat, X } from "lucide-react";
 import { TaskCreateForm } from "@/components/task-create-form";
 import { LiveCheckbox, LiveSearchInput, LiveSelect } from "@/components/live-filters";
+import { SectionTabs } from "@/components/section-tabs";
+import { tarefasTabs } from "@/components/section-tab-items";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
@@ -45,6 +47,7 @@ export default async function TarefasPage({
     overdue?: string;
     closed?: string;
     q?: string;
+    schedule?: string;
   }>;
 }) {
   const query = await searchParams;
@@ -57,6 +60,7 @@ export default async function TarefasPage({
     overdue: query.overdue === "1" ? "1" : undefined,
     open_only: showClosed || query.status ? undefined : "1",
     q: query.q || undefined,
+    schedule_id: query.schedule || undefined,
   };
 
   const [payload, conversationsPayload, contactsPayload] = await Promise.all([
@@ -74,6 +78,7 @@ export default async function TarefasPage({
   if (query.overdue === "1") filterParams.set("overdue", "1");
   if (showClosed) filterParams.set("closed", "1");
   if (query.q) filterParams.set("q", query.q);
+  if (query.schedule) filterParams.set("schedule", query.schedule);
 
   return (
     <div className="mx-auto max-w-5xl p-5 md:p-9 lg:p-12">
@@ -82,6 +87,18 @@ export default async function TarefasPage({
         title="Tarefas"
         description="Cadastre e acompanhe tarefas com prazo, empresa e vínculo opcional a conversas ou contatos. Também disponíveis via MCP."
       />
+      <SectionTabs items={tarefasTabs} />
+      {query.schedule && (
+        <p className="mb-5 flex flex-wrap items-center gap-2 rounded-xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand">
+          <Repeat size={17} />Mostrando tarefas criadas pela recorrência #{query.schedule}.
+          <Link
+            href={`?${(() => { const params = new URLSearchParams(filterParams); params.delete("schedule"); return params.toString(); })()}`}
+            className="focus-ring ml-auto inline-flex items-center gap-1 rounded-lg px-2 py-1 hover:bg-white/60"
+          >
+            <X size={15} />Limpar
+          </Link>
+        </p>
+      )}
       {query.created === "1" && (
         <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
           <Check size={17} />Tarefa criada.
@@ -156,6 +173,7 @@ export default async function TarefasPage({
                     </p>
                     <Badge tone={statusTone(task.status)}>{statusLabel[task.status] || task.status}</Badge>
                     {overdue && <Badge tone="danger">Atrasada</Badge>}
+                    {task.schedule_id && <Badge tone="neutral">Recorrente</Badge>}
                   </div>
                   <p className="mt-1 text-xs text-muted">
                     {[task.company, task.conversation_title, task.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}

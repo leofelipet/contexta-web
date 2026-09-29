@@ -10,6 +10,7 @@ The application is built with Next.js, React, TypeScript, and Tailwind CSS. It a
 - Dashboard with contacts, conversations, messages, and integration health
 - Responsive conversation explorer with incremental history loading
 - Contact directory and full-text message search
+- Tasks and recurring task schedules (cron-based, checked every 5 minutes)
 - UAZAPI status and webhook configuration
 - MCP server status and tool inventory
 - Privacy-safe operational activity viewer

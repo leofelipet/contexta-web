@@ -204,7 +204,28 @@ export type Task = {
   contact_id?: string | null;
   conversation_title?: string | null;
   contact_name?: string | null;
+  schedule_id?: string | null;
   memories?: TaskMemoryRef[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type TaskSchedule = {
+  id: string;
+  cron: string;
+  timezone: string;
+  enabled: boolean;
+  skip_if_open: boolean;
+  title: string;
+  description?: string | null;
+  company?: string | null;
+  due_in_minutes?: number | null;
+  conversation_id?: string | null;
+  contact_id?: string | null;
+  next_run_at?: string | null;
+  last_run_at?: string | null;
+  last_task_id?: string | null;
+  run_count: number;
   created_at: string;
   updated_at: string;
 };
