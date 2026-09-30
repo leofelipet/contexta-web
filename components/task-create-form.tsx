@@ -3,8 +3,9 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { createTask } from "@/app/actions";
+import { CompanySelect } from "@/components/company-select";
 import { contactName } from "@/lib/format";
-import type { Contact, Conversation } from "@/lib/types";
+import type { Company, Contact, Conversation } from "@/lib/types";
 
 const statuses = [
   { value: "pending", label: "Pendente" },
@@ -17,9 +18,16 @@ const statuses = [
 export function TaskCreateForm({
   conversations,
   contacts,
+  companies,
+  defaultCompanyId,
+  returnTo,
 }: {
   conversations: Conversation[];
   contacts: Contact[];
+  companies: Company[];
+  defaultCompanyId?: string;
+  /** Company page to return to after creating, instead of the task list. */
+  returnTo?: string;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -44,13 +52,14 @@ export function TaskCreateForm({
         </button>
       </div>
       <form action={createTask} className="mt-5 grid gap-4 sm:grid-cols-2">
+        {returnTo ? <input type="hidden" name="return_to" value={returnTo} /> : null}
         <label className="block text-sm sm:col-span-2">
           <span className="mb-1.5 block font-medium">Título</span>
           <input name="title" required maxLength={500} placeholder="O que precisa ser feito" className="focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm" />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Empresa</span>
-          <input name="company" maxLength={200} placeholder="Texto livre" className="focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm" />
+          <CompanySelect companies={companies} defaultValue={defaultCompanyId} emptyLabel="Nenhuma (ou a do contato)" />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Status</span>

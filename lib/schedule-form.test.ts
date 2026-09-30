@@ -88,6 +88,11 @@ describe("schedule body", () => {
     expect(scheduleBody(form({ ...values, due_hours: "4" }), false)).toMatchObject({ due_in_minutes: 240 });
   });
 
+  it("sends the company link as company_id", () => {
+    expect(scheduleBody(form({ ...values, company_id: "7" }), false)).toMatchObject({ company_id: "7" });
+    expect(scheduleBody(form(values), true)).toMatchObject({ company_id: "" });
+  });
+
   it("reports incomplete frequency and invalid due", () => {
     expect(() => scheduleBody(form({ ...values, time: "" }), false)).toThrow(ScheduleFormError);
     expect(() => scheduleBody(form({ ...values, due_hours: "-1" }), false)).toThrow(ScheduleFormError);

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Check, Repeat } from "lucide-react";
+import { ArrowLeft, Building2, Check, Repeat } from "lucide-react";
 import { notFound } from "next/navigation";
 import { TaskEditForm } from "@/components/task-edit-form";
 import { TaskMemoriesSection } from "@/components/task-memories-section";
 import { Badge, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import type { Contact, Conversation, Memory, Paginated, Task } from "@/lib/types";
+import type { Company, Contact, Conversation, Memory, Paginated, Task } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tarefa" };
 
@@ -44,10 +44,11 @@ export default async function TarefaDetailPage({
     notFound();
   }
 
-  const [conversationsPayload, contactsPayload, memoriesPayload] = await Promise.all([
+  const [conversationsPayload, contactsPayload, memoriesPayload, companiesPayload] = await Promise.all([
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { limit: 200 } }),
     apiFetch<Memory[] | Paginated<Memory>>("/api/v1/memories", { query: { limit: 200 } }),
+    apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
   ]);
 
   return (
@@ -66,6 +67,14 @@ export default async function TarefaDetailPage({
           <Check size={17} />Tarefa atualizada.
         </p>
       )}
+      {task.company_id && (
+        <Link
+          href={`/empresas/${encodeURIComponent(task.company_id)}`}
+          className="focus-ring mb-5 flex items-center gap-2 rounded-xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand hover:underline"
+        >
+          <Building2 size={17} />Empresa: {task.company_name || `#${task.company_id}`}
+        </Link>
+      )}
       {task.schedule_id && (
         <Link
           href={`/recorrentes/${encodeURIComponent(task.schedule_id)}`}
@@ -79,6 +88,7 @@ export default async function TarefaDetailPage({
           task={task}
           conversations={itemsFrom(conversationsPayload)}
           contacts={itemsFrom(contactsPayload)}
+          companies={itemsFrom(companiesPayload)}
         />
       </div>
       <TaskMemoriesSection

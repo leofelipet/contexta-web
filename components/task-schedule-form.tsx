@@ -8,6 +8,7 @@ import {
   updateTaskSchedule,
   type ScheduleFormState,
 } from "@/app/actions";
+import { CompanySelect } from "@/components/company-select";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { contactName } from "@/lib/format";
 import {
@@ -21,12 +22,20 @@ import {
   type Frequency,
   type FrequencyMode,
 } from "@/lib/schedule-form";
-import type { Contact, Conversation, TaskSchedule } from "@/lib/types";
+import type { Company, Contact, Conversation, TaskSchedule } from "@/lib/types";
 
 const initialState: ScheduleFormState = {};
 const inputClass = "focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm";
 
-export function TaskScheduleCreate({ conversations, contacts }: { conversations: Conversation[]; contacts: Contact[] }) {
+export function TaskScheduleCreate({
+  conversations,
+  contacts,
+  companies,
+}: {
+  conversations: Conversation[];
+  contacts: Contact[];
+  companies: Company[];
+}) {
   const [open, setOpen] = useState(false);
 
   if (!open) {
@@ -50,7 +59,7 @@ export function TaskScheduleCreate({ conversations, contacts }: { conversations:
         </button>
       </div>
       <div className="mt-5">
-        <TaskScheduleForm conversations={conversations} contacts={contacts} />
+        <TaskScheduleForm conversations={conversations} contacts={contacts} companies={companies} />
       </div>
     </section>
   );
@@ -60,10 +69,12 @@ export function TaskScheduleForm({
   schedule,
   conversations,
   contacts,
+  companies,
 }: {
   schedule?: TaskSchedule;
   conversations: Conversation[];
   contacts: Contact[];
+  companies: Company[];
 }) {
   const editing = Boolean(schedule);
   const [state, action, pending] = useActionState(editing ? updateTaskSchedule : createTaskSchedule, initialState);
@@ -148,7 +159,7 @@ export function TaskScheduleForm({
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Empresa</span>
-          <input name="company" maxLength={200} defaultValue={schedule?.company || ""} placeholder="Texto livre" className={inputClass} />
+          <CompanySelect companies={companies} defaultValue={schedule?.company_id} className={`${inputClass} bg-white`} />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Conversa (opcional)</span>

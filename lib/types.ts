@@ -6,6 +6,8 @@ export type Contact = {
   push_name?: string | null;
   phone?: string | null;
   profile_picture_url?: string | null;
+  company_id?: string | null;
+  company_name?: string | null;
   created_at?: string;
   updated_at?: string;
   [key: string]: unknown;
@@ -197,7 +199,8 @@ export type Task = {
   id: string;
   title: string;
   description?: string | null;
-  company?: string | null;
+  company_id?: string | null;
+  company_name?: string | null;
   status: TaskStatus | string;
   due_at?: string | null;
   conversation_id?: string | null;
@@ -218,7 +221,8 @@ export type TaskSchedule = {
   skip_if_open: boolean;
   title: string;
   description?: string | null;
-  company?: string | null;
+  company_id?: string | null;
+  company_name?: string | null;
   due_in_minutes?: number | null;
   conversation_id?: string | null;
   contact_id?: string | null;
@@ -226,6 +230,17 @@ export type TaskSchedule = {
   last_run_at?: string | null;
   last_task_id?: string | null;
   run_count: number;
+  created_at: string;
+  updated_at: string;
+};
+
+export type Company = {
+  id: string;
+  name: string;
+  notes?: string | null;
+  open_task_count: number;
+  task_count: number;
+  contact_count: number;
   created_at: string;
   updated_at: string;
 };

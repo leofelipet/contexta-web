@@ -4,9 +4,10 @@ import { compare } from "bcryptjs";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { ApiError, apiFetch } from "@/lib/api";
+import { companyApiErrorMessage, companyBody, companyReturnPath } from "@/lib/company-form";
 import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
 import { scheduleApiErrorMessage, scheduleBody, ScheduleFormError } from "@/lib/schedule-form";
-import type { EmailAccount, EmailTestResult, TaskSchedule } from "@/lib/types";
+import type { Company, EmailAccount, EmailTestResult, TaskSchedule } from "@/lib/types";
 import { clearSession, createSession, requireSession } from "@/lib/session";
 import { clearClientAttempts, loginAllowed, recordFailedLogin } from "@/lib/login-rate-limit";
 
@@ -84,7 +85,7 @@ export async function createTask(formData: FormData) {
   await requireSession();
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
-  const company = String(formData.get("company") || "").trim();
+  const companyId = String(formData.get("company_id") || "").trim();
   const status = String(formData.get("status") || "").trim() || "pending";
   const dueAt = String(formData.get("due_at") || "").trim();
   const conversationId = String(formData.get("conversation_id") || "").trim();
@@ -94,14 +95,15 @@ export async function createTask(formData: FormData) {
     body: {
       title,
       ...(description ? { description } : {}),
-      ...(company ? { company } : {}),
+      ...(companyId ? { company_id: companyId } : {}),
       status,
       ...(dueAt ? { due_at: dueAt } : {}),
       ...(conversationId ? { conversation_id: conversationId } : {}),
       ...(contactId ? { contact_id: contactId } : {}),
     },
   });
-  redirect("/tarefas?created=1");
+  const returnPath = companyReturnPath(formData.get("return_to"));
+  redirect(returnPath ? `${returnPath}?updated=1` : "/tarefas?created=1");
 }
 
 export async function updateTask(formData: FormData) {
@@ -109,7 +111,7 @@ export async function updateTask(formData: FormData) {
   const id = String(formData.get("id") || "").trim();
   const title = String(formData.get("title") || "").trim();
   const description = String(formData.get("description") || "").trim();
-  const company = String(formData.get("company") || "").trim();
+  const companyId = String(formData.get("company_id") || "").trim();
   const status = String(formData.get("status") || "").trim();
   const dueAt = String(formData.get("due_at") || "").trim();
   const conversationId = String(formData.get("conversation_id") || "").trim();
@@ -119,7 +121,7 @@ export async function updateTask(formData: FormData) {
     body: {
       title,
       description,
-      company,
+      company_id: companyId,
       status,
       due_at: dueAt,
       conversation_id: conversationId,
@@ -134,6 +136,93 @@ export async function deleteTask(formData: FormData) {
   const id = String(formData.get("id") || "").trim();
   await apiFetch(`/api/v1/tasks/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/tarefas?deleted=1");
+}
+
+export type CompanyFormState = { error?: string };
+
+function companyFormError(error: unknown): CompanyFormState {
+  return { error: companyApiErrorMessage(error instanceof ApiError ? error.status : 0) };
+}
+
+export async function createCompany(_: CompanyFormState, formData: FormData): Promise<CompanyFormState> {
+  await requireSession();
+  let company: Company;
+  try {
+    company = await apiFetch<Company>("/api/v1/companies", { method: "POST", body: companyBody(formData) });
+  } catch (error) {
+    return companyFormError(error);
+  }
+  redirect(`/empresas/${encodeURIComponent(company.id)}?created=1`);
+}
+
+export async function updateCompany(_: CompanyFormState, formData: FormData): Promise<CompanyFormState> {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  try {
+    await apiFetch<Company>(`/api/v1/companies/${encodeURIComponent(id)}`, { method: "PATCH", body: companyBody(formData) });
+  } catch (error) {
+    return companyFormError(error);
+  }
+  redirect(`/empresas/${encodeURIComponent(id)}?updated=1`);
+}
+
+export async function deleteCompany(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/companies/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/empresas?deleted=1");
+}
+
+/** Links (or with an empty company_id, unlinks) a task from a company page. */
+export async function setCompanyTask(formData: FormData) {
+  await requireSession();
+  const pageCompanyId = String(formData.get("page_company_id") || "").trim();
+  const taskId = String(formData.get("task_id") || "").trim();
+  const companyId = String(formData.get("company_id") || "").trim();
+  await apiFetch(`/api/v1/tasks/${encodeURIComponent(taskId)}`, { method: "PATCH", body: { company_id: companyId } });
+  redirect(`/empresas/${encodeURIComponent(pageCompanyId)}?updated=1`);
+}
+
+export async function attachCompanyContact(formData: FormData) {
+  await requireSession();
+  const companyId = String(formData.get("company_id") || "").trim();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  await apiFetch(`/api/v1/companies/${encodeURIComponent(companyId)}/contacts`, {
+    method: "POST",
+    body: { contact_id: contactId },
+  });
+  redirect(`/empresas/${encodeURIComponent(companyId)}?updated=1`);
+}
+
+export async function detachCompanyContact(formData: FormData) {
+  await requireSession();
+  const companyId = String(formData.get("company_id") || "").trim();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  await apiFetch(
+    `/api/v1/companies/${encodeURIComponent(companyId)}/contacts/${encodeURIComponent(contactId)}`,
+    { method: "DELETE" },
+  );
+  redirect(`/empresas/${encodeURIComponent(companyId)}?updated=1`);
+}
+
+/** Sets the contact's company from the contact page; empty clears it. */
+export async function setContactCompany(formData: FormData) {
+  await requireSession();
+  const contactId = String(formData.get("contact_id") || "").trim();
+  const companyId = String(formData.get("company_id") || "").trim();
+  const currentCompanyId = String(formData.get("current_company_id") || "").trim();
+  if (companyId) {
+    await apiFetch(`/api/v1/companies/${encodeURIComponent(companyId)}/contacts`, {
+      method: "POST",
+      body: { contact_id: contactId },
+    });
+  } else if (currentCompanyId) {
+    await apiFetch(
+      `/api/v1/companies/${encodeURIComponent(currentCompanyId)}/contacts/${encodeURIComponent(contactId)}`,
+      { method: "DELETE" },
+    );
+  }
+  redirect(`/contacts/${encodeURIComponent(contactId)}?updated=1`);
 }
 
 export type ScheduleFormState = { error?: string };

@@ -3,9 +3,10 @@
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { deleteTask, updateTask } from "@/app/actions";
+import { CompanySelect } from "@/components/company-select";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { contactName } from "@/lib/format";
-import type { Contact, Conversation, Task } from "@/lib/types";
+import type { Company, Contact, Conversation, Task } from "@/lib/types";
 
 const statuses = [
   { value: "pending", label: "Pendente" },
@@ -26,10 +27,12 @@ export function TaskEditForm({
   task,
   conversations,
   contacts,
+  companies,
 }: {
   task: Task;
   conversations: Conversation[];
   contacts: Contact[];
+  companies: Company[];
 }) {
   const [open, setOpen] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -44,7 +47,7 @@ export function TaskEditForm({
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Empresa</span>
-          <input name="company" maxLength={200} defaultValue={task.company || ""} className="focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm" />
+          <CompanySelect companies={companies} defaultValue={task.company_id} />
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Status</span>

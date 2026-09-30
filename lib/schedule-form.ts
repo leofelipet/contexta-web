@@ -152,7 +152,7 @@ export function scheduleBody(formData: FormData, editing: boolean) {
     timezone: text("timezone") || DEFAULT_TIMEZONE,
     title: text("title"),
     description: text("description"),
-    company: text("company"),
+    company_id: text("company_id"),
     conversation_id: text("conversation_id"),
     contact_id: text("contact_id"),
     skip_if_open: formData.get("skip_if_open") === "on",
@@ -169,6 +169,6 @@ export function scheduleApiErrorMessage(status: number, detail?: string) {
     return "Expressão cron inválida. Use 5 campos (minuto hora dia mês dia-da-semana), ex.: 0 9 * * 1-5.";
   }
   if (status === 400) return "Dados inválidos. Confira título, frequência e prazo.";
-  if (status === 404) return "Recorrência, conversa ou contato não encontrado.";
+  if (status === 404) return "Recorrência, empresa, conversa ou contato não encontrado.";
   return "Não foi possível salvar agora. Tente novamente.";
 }

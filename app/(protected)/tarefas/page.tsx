@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Check, Repeat, X } from "lucide-react";
+import { Building2, Check, Repeat, X } from "lucide-react";
 import { TaskCreateForm } from "@/components/task-create-form";
 import { LiveCheckbox, LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { SectionTabs } from "@/components/section-tabs";
@@ -8,7 +8,7 @@ import { tarefasTabs } from "@/components/section-tab-items";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
-import type { Contact, Conversation, Paginated, Task } from "@/lib/types";
+import type { Company, Contact, Conversation, Paginated, Task } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tarefas" };
 
@@ -56,21 +56,24 @@ export default async function TarefasPage({
     cursor: query.cursor,
     limit: 50,
     status: query.status || undefined,
-    company: query.company || undefined,
+    company_id: query.company || undefined,
     overdue: query.overdue === "1" ? "1" : undefined,
     open_only: showClosed || query.status ? undefined : "1",
     q: query.q || undefined,
     schedule_id: query.schedule || undefined,
   };
 
-  const [payload, conversationsPayload, contactsPayload] = await Promise.all([
+  const [payload, conversationsPayload, contactsPayload, companiesPayload] = await Promise.all([
     apiFetch<Task[] | Paginated<Task>>("/api/v1/tasks", { query: filters }),
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { limit: 200 } }),
+    apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
   ]);
   const taskList = itemsFrom(payload);
   const conversations = itemsFrom(conversationsPayload);
   const contacts = itemsFrom(contactsPayload);
+  const companies = itemsFrom(companiesPayload);
+  const filteredCompany = query.company ? companies.find((company) => company.id === query.company) : undefined;
 
   const filterParams = new URLSearchParams();
   if (query.status) filterParams.set("status", query.status);
@@ -99,6 +102,12 @@ export default async function TarefasPage({
           </Link>
         </p>
       )}
+      {filteredCompany && (
+        <p className="mb-5 flex flex-wrap items-center gap-2 rounded-xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand">
+          <Building2 size={17} />Mostrando tarefas da empresa
+          <Link href={`/empresas/${encodeURIComponent(filteredCompany.id)}`} className="underline">{filteredCompany.name}</Link>.
+        </p>
+      )}
       {query.created === "1" && (
         <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
           <Check size={17} />Tarefa criada.
@@ -110,7 +119,7 @@ export default async function TarefasPage({
         </p>
       )}
 
-      <TaskCreateForm conversations={conversations} contacts={contacts} />
+      <TaskCreateForm conversations={conversations} contacts={contacts} companies={companies} defaultCompanyId={query.company} />
 
       <div className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_1fr_auto] lg:grid-cols-[1fr_1fr_auto_auto_auto]">
         <label className="block text-sm">
@@ -124,11 +133,12 @@ export default async function TarefasPage({
         </label>
         <label className="block text-sm">
           <span className="mb-1.5 block font-medium">Empresa</span>
-          <LiveSearchInput
+          <LiveSelect
             name="company"
-            defaultValue={query.company || ""}
-            placeholder="Filtrar empresa"
-            className="focus-ring h-10 w-full rounded-xl border border-line bg-white pl-10 pr-3 text-sm"
+            label="Empresa"
+            value={query.company || ""}
+            options={[["", "Todas"], ...companies.map((company): [string, string] => [company.id, company.name])]}
+            className="focus-ring h-10 w-full rounded-xl border border-line bg-white px-3 text-sm"
           />
         </label>
         <label className="block text-sm">
@@ -176,7 +186,7 @@ export default async function TarefasPage({
                     {task.schedule_id && <Badge tone="neutral">Recorrente</Badge>}
                   </div>
                   <p className="mt-1 text-xs text-muted">
-                    {[task.company, task.conversation_title, task.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}
+                    {[task.company_name, task.conversation_title, task.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}
                   </p>
                 </div>
                 <div className="text-right text-xs text-muted">

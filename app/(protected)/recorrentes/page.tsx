@@ -9,7 +9,7 @@ import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { describeCron } from "@/lib/schedule-form";
-import type { Contact, Conversation, Paginated, TaskSchedule } from "@/lib/types";
+import type { Company, Contact, Conversation, Paginated, TaskSchedule } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tarefas recorrentes" };
 
@@ -21,12 +21,13 @@ export default async function RecorrentesPage({
   const query = await searchParams;
   const enabled = query.enabled === "true" || query.enabled === "false" ? query.enabled : undefined;
 
-  const [payload, conversationsPayload, contactsPayload] = await Promise.all([
+  const [payload, conversationsPayload, contactsPayload, companiesPayload] = await Promise.all([
     apiFetch<TaskSchedule[] | Paginated<TaskSchedule>>("/api/v1/task-schedules", {
       query: { limit: 50, cursor: query.cursor, enabled, q: query.q || undefined },
     }),
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { limit: 200 } }),
+    apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
   ]);
   const scheduleList = itemsFrom(payload);
 
@@ -48,7 +49,7 @@ export default async function RecorrentesPage({
         </p>
       )}
 
-      <TaskScheduleCreate conversations={itemsFrom(conversationsPayload)} contacts={itemsFrom(contactsPayload)} />
+      <TaskScheduleCreate conversations={itemsFrom(conversationsPayload)} contacts={itemsFrom(contactsPayload)} companies={itemsFrom(companiesPayload)} />
 
       <div className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_14rem]">
         <label className="block text-sm">
@@ -93,7 +94,7 @@ export default async function RecorrentesPage({
                   <Badge tone={schedule.enabled ? "success" : "neutral"}>{schedule.enabled ? "Ativa" : "Pausada"}</Badge>
                 </div>
                 <p className="mt-1 text-xs text-muted">
-                  {[describeCron(schedule.cron), schedule.company].filter(Boolean).join(" · ")}
+                  {[describeCron(schedule.cron), schedule.company_name].filter(Boolean).join(" · ")}
                 </p>
               </div>
               <div className="text-right text-xs text-muted">
