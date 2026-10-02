@@ -2,8 +2,10 @@
 
 import { compare } from "bcryptjs";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiError, apiFetch } from "@/lib/api";
+import { bulkIds, type BulkResult } from "@/lib/bulk";
 import { companyApiErrorMessage, companyBody, companyReturnPath } from "@/lib/company-form";
 import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
 import { scheduleApiErrorMessage, scheduleBody, ScheduleFormError } from "@/lib/schedule-form";
@@ -402,4 +404,54 @@ export async function testEmailAccount(_: EmailTestState, formData: FormData): P
   } catch (error) {
     return emailFormError(error);
   }
+}
+
+export async function completeTask(id: string) {
+  await requireSession();
+  await apiFetch(`/api/v1/tasks/${encodeURIComponent(String(id).trim())}`, { method: "PATCH", body: { status: "done" } });
+  revalidatePath("/tarefas");
+}
+
+async function bulkRequest(path: string, ids: string[], extra: Record<string, unknown>, revalidate: string | null): Promise<BulkResult> {
+  await requireSession();
+  const result = await apiFetch<{ count?: number; deleted_count?: number }>(path, {
+    method: "POST",
+    body: { ids: bulkIds(ids), ...extra },
+  });
+  if (revalidate) revalidatePath(revalidate, "layout");
+  return { count: result.count ?? result.deleted_count ?? 0 };
+}
+
+export async function bulkDeleteTasks(ids: string[]) {
+  return bulkRequest("/api/v1/tasks/bulk-delete", ids, {}, "/tarefas");
+}
+
+export async function bulkSetTasksStatus(status: string, ids: string[]) {
+  return bulkRequest("/api/v1/tasks/bulk-update", ids, { status }, "/tarefas");
+}
+
+export async function bulkDeleteMemories(ids: string[]) {
+  return bulkRequest("/api/v1/memories/bulk-delete", ids, {}, "/memorias");
+}
+
+export async function bulkDeleteTaskSchedules(ids: string[]) {
+  return bulkRequest("/api/v1/task-schedules/bulk-delete", ids, {}, "/recorrentes");
+}
+
+export async function bulkSetTaskSchedulesEnabled(enabled: boolean, ids: string[]) {
+  return bulkRequest("/api/v1/task-schedules/bulk-update", ids, { enabled }, "/recorrentes");
+}
+
+export async function bulkDeleteCompanies(ids: string[]) {
+  return bulkRequest("/api/v1/companies/bulk-delete", ids, {}, "/empresas");
+}
+
+export async function bulkRemoveDenylistEntries(ids: string[]) {
+  return bulkRequest("/api/v1/denylist/bulk-delete", ids, {}, "/denylist");
+}
+
+// The conversation list refreshes or navigates on the client, since the open
+// conversation may be one of the deleted ones.
+export async function bulkDeleteConversations(ids: string[]) {
+  return bulkRequest("/api/v1/conversations/bulk-delete", ids, {}, null);
 }

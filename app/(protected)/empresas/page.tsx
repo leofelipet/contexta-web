@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Building2, Check } from "lucide-react";
+import { bulkDeleteCompanies } from "@/app/actions";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { CompanyCreate } from "@/components/company-form";
 import { LiveSearchInput } from "@/components/live-filters";
 import { EmptyState, PageHeader } from "@/components/ui";
@@ -8,6 +10,23 @@ import { apiFetch, itemsFrom } from "@/lib/api";
 import type { Company, Paginated } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Empresas" };
+
+const companyNoun = ["empresa", "empresas"] as const;
+
+const bulkActions: BulkAction[] = [
+  {
+    label: "Apagar",
+    icon: "trash",
+    tone: "danger",
+    run: bulkDeleteCompanies,
+    done: ["empresa apagada", "empresas apagadas"],
+    confirm: {
+      title: "Apagar {n}?",
+      description: "Essa ação apaga {n} de forma permanente. Tarefas, recorrências e contatos vinculados são mantidos, sem empresa.",
+      confirmLabel: "Apagar",
+    },
+  },
+];
 
 function plural(count: number, one: string, many: string) {
   return `${count} ${count === 1 ? one : many}`;
@@ -52,27 +71,33 @@ export default async function EmpresasPage({
       </div>
 
       {companyList.length ? (
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
-          {companyList.map((company) => (
-            <Link
-              key={company.id}
-              href={`/empresas/${encodeURIComponent(company.id)}`}
-              className="flex flex-wrap items-center gap-4 border-b border-line p-4 last:border-0 hover:bg-slate-50"
-            >
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
-                <Building2 size={18} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold">{company.name}</p>
-                {company.notes ? <p className="mt-1 truncate text-xs text-muted">{company.notes}</p> : null}
+        <BulkSelectionProvider ids={companyList.map((company) => company.id)}>
+          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+            <BulkSelectAll noun={companyNoun} />
+            {companyList.map((company) => (
+              <div key={company.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
+                <BulkCheckbox id={company.id} label={company.name} />
+                <Link
+                  href={`/empresas/${encodeURIComponent(company.id)}`}
+                  className="focus-ring flex min-w-0 flex-1 flex-wrap items-center gap-4 rounded-lg py-4 pr-1"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+                    <Building2 size={18} />
+                  </span>
+                  <div className="min-w-40 flex-1">
+                    <p className="truncate text-sm font-semibold">{company.name}</p>
+                    {company.notes ? <p className="mt-1 truncate text-xs text-muted">{company.notes}</p> : null}
+                  </div>
+                  <div className="text-xs text-muted sm:text-right">
+                    <p>{plural(company.open_task_count, "tarefa aberta", "tarefas abertas")} · {company.task_count} no total</p>
+                    <p className="mt-1">{plural(company.contact_count, "contato", "contatos")}</p>
+                  </div>
+                </Link>
               </div>
-              <div className="text-right text-xs text-muted">
-                <p>{plural(company.open_task_count, "tarefa aberta", "tarefas abertas")} · {company.task_count} no total</p>
-                <p className="mt-1">{plural(company.contact_count, "contato", "contatos")}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+          <BulkActionBar noun={companyNoun} actions={bulkActions} />
+        </BulkSelectionProvider>
       ) : (
         <EmptyState title="Nenhuma empresa" description="Crie uma empresa acima ou ajuste a busca." />
       )}

@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Building2, Check, Repeat, X } from "lucide-react";
+import { bulkDeleteTasks, bulkSetTasksStatus } from "@/app/actions";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
+import { TaskCompleteButton } from "@/components/task-complete-button";
 import { TaskCreateForm } from "@/components/task-create-form";
 import { LiveCheckbox, LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { SectionTabs } from "@/components/section-tabs";
@@ -26,6 +29,12 @@ function statusTone(status: string): "success" | "danger" | "neutral" | "warning
   if (status === "in_progress") return "warning";
   if (status === "blocked") return "danger";
   return "neutral";
+}
+
+const taskNoun = ["tarefa", "tarefas"] as const;
+
+function isClosed(task: Task) {
+  return task.status === "done" || task.status === "cancelled";
 }
 
 function isOverdue(task: Task) {
@@ -82,6 +91,26 @@ export default async function TarefasPage({
   if (showClosed) filterParams.set("closed", "1");
   if (query.q) filterParams.set("q", query.q);
   if (query.schedule) filterParams.set("schedule", query.schedule);
+
+  const bulkActions: BulkAction[] = [
+    { label: "Concluir", icon: "check", run: bulkSetTasksStatus.bind(null, "done"), done: ["tarefa concluída", "tarefas concluídas"] },
+    { label: "Cancelar", icon: "cancel", run: bulkSetTasksStatus.bind(null, "cancelled"), done: ["tarefa cancelada", "tarefas canceladas"] },
+    ...(showClosed || query.status === "done" || query.status === "cancelled"
+      ? [{ label: "Reabrir", icon: "play", run: bulkSetTasksStatus.bind(null, "pending"), done: ["tarefa reaberta", "tarefas reabertas"] } satisfies BulkAction]
+      : []),
+    {
+      label: "Apagar",
+      icon: "trash",
+      tone: "danger",
+      run: bulkDeleteTasks,
+      done: ["tarefa apagada", "tarefas apagadas"],
+      confirm: {
+        title: "Apagar {n}?",
+        description: "Essa ação apaga {n} de forma permanente e não pode ser desfeita. As memórias vinculadas são mantidas.",
+        confirmLabel: "Apagar",
+      },
+    },
+  ];
 
   return (
     <div className="mx-auto max-w-5xl p-5 md:p-9 lg:p-12">
@@ -167,36 +196,45 @@ export default async function TarefasPage({
       </div>
 
       {taskList.length ? (
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
-          {taskList.map((task) => {
-            const overdue = isOverdue(task);
-            return (
-              <Link
-                key={task.id}
-                href={`/tarefas/${encodeURIComponent(task.id)}`}
-                className="flex flex-wrap items-center gap-4 border-b border-line p-4 last:border-0 hover:bg-slate-50"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-semibold">
-                      #{task.id} - {task.title}
-                    </p>
-                    <Badge tone={statusTone(task.status)}>{statusLabel[task.status] || task.status}</Badge>
-                    {overdue && <Badge tone="danger">Atrasada</Badge>}
-                    {task.schedule_id && <Badge tone="neutral">Recorrente</Badge>}
-                  </div>
-                  <p className="mt-1 text-xs text-muted">
-                    {[task.company_name, task.conversation_title, task.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}
-                  </p>
+        <BulkSelectionProvider ids={taskList.map((task) => task.id)}>
+          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+            <BulkSelectAll noun={taskNoun} />
+            {taskList.map((task) => {
+              const overdue = isOverdue(task);
+              const label = `#${task.id} - ${task.title}`;
+              return (
+                <div
+                  key={task.id}
+                  className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60 has-[[data-completing]]:opacity-40"
+                >
+                  <BulkCheckbox id={task.id} label={label} />
+                  <Link
+                    href={`/tarefas/${encodeURIComponent(task.id)}`}
+                    className="focus-ring flex min-w-0 flex-1 flex-wrap items-center gap-4 rounded-lg py-4"
+                  >
+                    <div className="min-w-40 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="truncate text-sm font-semibold">{label}</p>
+                        <Badge tone={statusTone(task.status)}>{statusLabel[task.status] || task.status}</Badge>
+                        {overdue && <Badge tone="danger">Atrasada</Badge>}
+                        {task.schedule_id && <Badge tone="neutral">Recorrente</Badge>}
+                      </div>
+                      <p className="mt-1 text-xs text-muted">
+                        {[task.company_name, task.conversation_title, task.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}
+                      </p>
+                    </div>
+                    <div className="text-xs text-muted sm:text-right">
+                      <p>{task.due_at ? `Prazo ${formatDate(task.due_at, false)}` : "Sem prazo"}</p>
+                      <p className="mt-1">Criada {formatDate(task.created_at, false)}</p>
+                    </div>
+                  </Link>
+                  {isClosed(task) ? <span aria-hidden className="size-8 shrink-0" /> : <TaskCompleteButton id={task.id} title={task.title} />}
                 </div>
-                <div className="text-right text-xs text-muted">
-                  <p>{task.due_at ? `Prazo ${formatDate(task.due_at, false)}` : "Sem prazo"}</p>
-                  <p className="mt-1">Criada {formatDate(task.created_at, false)}</p>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+          <BulkActionBar noun={taskNoun} actions={bulkActions} />
+        </BulkSelectionProvider>
       ) : (
         <EmptyState title="Nenhuma tarefa" description="Crie uma tarefa acima ou ajuste os filtros." />
       )}

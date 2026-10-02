@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Repeat } from "lucide-react";
+import { bulkDeleteTaskSchedules, bulkSetTaskSchedulesEnabled } from "@/app/actions";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { SectionTabs } from "@/components/section-tabs";
 import { tarefasTabs } from "@/components/section-tab-items";
@@ -12,6 +14,25 @@ import { describeCron } from "@/lib/schedule-form";
 import type { Company, Contact, Conversation, Paginated, TaskSchedule } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Tarefas recorrentes" };
+
+const scheduleNoun = ["recorrência", "recorrências"] as const;
+
+const bulkActions: BulkAction[] = [
+  { label: "Pausar", icon: "pause", run: bulkSetTaskSchedulesEnabled.bind(null, false), done: ["recorrência pausada", "recorrências pausadas"] },
+  { label: "Ativar", icon: "play", run: bulkSetTaskSchedulesEnabled.bind(null, true), done: ["recorrência ativada", "recorrências ativadas"] },
+  {
+    label: "Apagar",
+    icon: "trash",
+    tone: "danger",
+    run: bulkDeleteTaskSchedules,
+    done: ["recorrência apagada", "recorrências apagadas"],
+    confirm: {
+      title: "Apagar {n}?",
+      description: "Essa ação apaga {n} de forma permanente. As tarefas já criadas são mantidas.",
+      confirmLabel: "Apagar",
+    },
+  },
+];
 
 export default async function RecorrentesPage({
   searchParams,
@@ -78,32 +99,38 @@ export default async function RecorrentesPage({
       </div>
 
       {scheduleList.length ? (
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
-          {scheduleList.map((schedule) => (
-            <Link
-              key={schedule.id}
-              href={`/recorrentes/${encodeURIComponent(schedule.id)}`}
-              className="flex flex-wrap items-center gap-4 border-b border-line p-4 last:border-0 hover:bg-slate-50"
-            >
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
-                <Repeat size={18} />
-              </span>
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate text-sm font-semibold">#{schedule.id} - {schedule.title}</p>
-                  <Badge tone={schedule.enabled ? "success" : "neutral"}>{schedule.enabled ? "Ativa" : "Pausada"}</Badge>
-                </div>
-                <p className="mt-1 text-xs text-muted">
-                  {[describeCron(schedule.cron), schedule.company_name].filter(Boolean).join(" · ")}
-                </p>
+        <BulkSelectionProvider ids={scheduleList.map((schedule) => schedule.id)}>
+          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+            <BulkSelectAll noun={scheduleNoun} />
+            {scheduleList.map((schedule) => (
+              <div key={schedule.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
+                <BulkCheckbox id={schedule.id} label={`#${schedule.id} - ${schedule.title}`} />
+                <Link
+                  href={`/recorrentes/${encodeURIComponent(schedule.id)}`}
+                  className="focus-ring flex min-w-0 flex-1 flex-wrap items-center gap-4 rounded-lg py-4 pr-1"
+                >
+                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+                    <Repeat size={18} />
+                  </span>
+                  <div className="min-w-40 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold">#{schedule.id} - {schedule.title}</p>
+                      <Badge tone={schedule.enabled ? "success" : "neutral"}>{schedule.enabled ? "Ativa" : "Pausada"}</Badge>
+                    </div>
+                    <p className="mt-1 text-xs text-muted">
+                      {[describeCron(schedule.cron), schedule.company_name].filter(Boolean).join(" · ")}
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted sm:text-right">
+                    <p>{schedule.enabled && schedule.next_run_at ? `Próxima ${formatDate(schedule.next_run_at)}` : "Sem próxima execução"}</p>
+                    <p className="mt-1">{schedule.run_count} {schedule.run_count === 1 ? "tarefa criada" : "tarefas criadas"}</p>
+                  </div>
+                </Link>
               </div>
-              <div className="text-right text-xs text-muted">
-                <p>{schedule.enabled && schedule.next_run_at ? `Próxima ${formatDate(schedule.next_run_at)}` : "Sem próxima execução"}</p>
-                <p className="mt-1">{schedule.run_count} {schedule.run_count === 1 ? "tarefa criada" : "tarefas criadas"}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+          <BulkActionBar noun={scheduleNoun} actions={bulkActions} />
+        </BulkSelectionProvider>
       ) : (
         <EmptyState title="Nenhuma recorrência" description="Crie uma recorrência acima ou ajuste os filtros." />
       )}

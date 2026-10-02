@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
+import { bulkDeleteMemories } from "@/app/actions";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { MemoryCreateForm } from "@/components/memory-create-form";
 import { LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
@@ -9,6 +11,23 @@ import { formatDate } from "@/lib/format";
 import type { Contact, Conversation, Memory, MemorySearchResult, Paginated } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Memórias" };
+
+const memoryNoun = ["memória", "memórias"] as const;
+
+const bulkActions: BulkAction[] = [
+  {
+    label: "Apagar",
+    icon: "trash",
+    tone: "danger",
+    run: bulkDeleteMemories,
+    done: ["memória apagada", "memórias apagadas"],
+    confirm: {
+      title: "Apagar {n}?",
+      description: "Essa ação apaga {n} de forma permanente, junto com os vínculos com tarefas, e não pode ser desfeita.",
+      confirmLabel: "Apagar",
+    },
+  },
+];
 
 const sourceLabel: Record<string, string> = {
   note: "Nota",
@@ -207,30 +226,36 @@ export default async function MemoriasPage({
       </div>
 
       {memoryList.length ? (
-        <div className="overflow-hidden rounded-2xl border border-line bg-white">
-          {memoryList.map((memory) => (
-            <Link
-              key={memory.id}
-              href={`/memorias/${encodeURIComponent(memory.id)}`}
-              className="flex flex-wrap items-center gap-4 border-b border-line p-4 last:border-0 hover:bg-slate-50"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <p className="truncate text-sm font-semibold">{memory.title || "Sem título"}</p>
-                  <Badge tone="neutral">{sourceLabel[memory.source] || memory.source}</Badge>
-                  <Badge tone={embeddingTone(memory.embedding_status)}>{embeddingLabel(memory.embedding_status)}</Badge>
-                </div>
-                <p className="mt-1 line-clamp-2 text-sm text-muted">{memory.content}</p>
-                <p className="mt-1 text-xs text-muted">
-                  {[memory.conversation_title, memory.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}
-                </p>
+        <BulkSelectionProvider ids={memoryList.map((memory) => memory.id)}>
+          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+            <BulkSelectAll noun={memoryNoun} />
+            {memoryList.map((memory) => (
+              <div key={memory.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
+                <BulkCheckbox id={memory.id} label={memory.title || "Sem título"} />
+                <Link
+                  href={`/memorias/${encodeURIComponent(memory.id)}`}
+                  className="focus-ring flex min-w-0 flex-1 flex-wrap items-center gap-4 rounded-lg py-4 pr-1"
+                >
+                  <div className="min-w-40 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate text-sm font-semibold">{memory.title || "Sem título"}</p>
+                      <Badge tone="neutral">{sourceLabel[memory.source] || memory.source}</Badge>
+                      <Badge tone={embeddingTone(memory.embedding_status)}>{embeddingLabel(memory.embedding_status)}</Badge>
+                    </div>
+                    <p className="mt-1 line-clamp-2 text-sm text-muted">{memory.content}</p>
+                    <p className="mt-1 text-xs text-muted">
+                      {[memory.conversation_title, memory.contact_name].filter(Boolean).join(" · ") || "Sem vínculos"}
+                    </p>
+                  </div>
+                  <div className="text-xs text-muted sm:text-right">
+                    <p>Criada {formatDate(memory.created_at, false)}</p>
+                  </div>
+                </Link>
               </div>
-              <div className="text-right text-xs text-muted">
-                <p>Criada {formatDate(memory.created_at, false)}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+          <BulkActionBar noun={memoryNoun} actions={bulkActions} />
+        </BulkSelectionProvider>
       ) : (
         <EmptyState title="Nenhuma memória" description="Crie uma memória acima ou ajuste os filtros." />
       )}
