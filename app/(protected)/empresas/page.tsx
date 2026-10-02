@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Building2, Check } from "lucide-react";
 import { bulkDeleteCompanies } from "@/app/actions";
-import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkList, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { CompanyCreate } from "@/components/company-form";
 import { LiveSearchInput } from "@/components/live-filters";
 import { EmptyState, PageHeader } from "@/components/ui";
@@ -72,10 +72,10 @@ export default async function EmpresasPage({
 
       {companyList.length ? (
         <BulkSelectionProvider ids={companyList.map((company) => company.id)}>
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <BulkList className="overflow-hidden rounded-2xl border border-line bg-white">
             <BulkSelectAll noun={companyNoun} />
             {companyList.map((company) => (
-              <div key={company.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
+              <div key={company.id} data-bulk-row={company.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
                 <BulkCheckbox id={company.id} label={company.name} />
                 <Link
                   href={`/empresas/${encodeURIComponent(company.id)}`}
@@ -95,7 +95,7 @@ export default async function EmpresasPage({
                 </Link>
               </div>
             ))}
-          </div>
+          </BulkList>
           <BulkActionBar noun={companyNoun} actions={bulkActions} />
         </BulkSelectionProvider>
       ) : (

@@ -34,7 +34,7 @@ export function TaskCompleteButton({ id, title }: { id: string; title: string })
       data-completing={completing || undefined}
       title={failed ? "Não foi possível concluir. Tente novamente." : "Marcar como concluída"}
       aria-label={`Marcar #${id} - ${title} como concluída`}
-      className={`focus-ring group/complete grid size-8 shrink-0 place-items-center rounded-full transition ${failed ? "text-red-600" : "text-muted hover:text-emerald-600"}`}
+      className={`focus-ring group/complete grid size-8 shrink-0 place-items-center rounded-full transition in-data-selecting:invisible ${failed ? "text-red-600" : "text-muted hover:text-emerald-600"}`}
     >
       <span
         className={`grid size-5 place-items-center rounded-full border-[1.5px] transition ${completing ? "border-emerald-600 bg-emerald-600 text-white" : failed ? "border-red-500" : "border-current group-hover/complete:bg-emerald-50"}`}

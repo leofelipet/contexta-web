@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Repeat } from "lucide-react";
 import { bulkDeleteTaskSchedules, bulkSetTaskSchedulesEnabled } from "@/app/actions";
-import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkList, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { SectionTabs } from "@/components/section-tabs";
 import { tarefasTabs } from "@/components/section-tab-items";
@@ -100,10 +100,10 @@ export default async function RecorrentesPage({
 
       {scheduleList.length ? (
         <BulkSelectionProvider ids={scheduleList.map((schedule) => schedule.id)}>
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <BulkList className="overflow-hidden rounded-2xl border border-line bg-white">
             <BulkSelectAll noun={scheduleNoun} />
             {scheduleList.map((schedule) => (
-              <div key={schedule.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
+              <div key={schedule.id} data-bulk-row={schedule.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
                 <BulkCheckbox id={schedule.id} label={`#${schedule.id} - ${schedule.title}`} />
                 <Link
                   href={`/recorrentes/${encodeURIComponent(schedule.id)}`}
@@ -128,7 +128,7 @@ export default async function RecorrentesPage({
                 </Link>
               </div>
             ))}
-          </div>
+          </BulkList>
           <BulkActionBar noun={scheduleNoun} actions={bulkActions} />
         </BulkSelectionProvider>
       ) : (

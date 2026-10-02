@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check, Trash2 } from "lucide-react";
 import { bulkRemoveDenylistEntries, removeDenylistEntry } from "@/app/actions";
-import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkList, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { DenylistAddForm } from "@/components/denylist-add-form";
 import { SectionTabs } from "@/components/section-tabs";
 import { manutencaoTabs } from "@/components/section-tab-items";
@@ -57,10 +57,10 @@ export default async function DenylistPage({ searchParams }: { searchParams: Pro
     />
 
     {entries.length ? <BulkSelectionProvider ids={entries.map((entry) => entry.id)}>
-      <div className="overflow-hidden rounded-2xl border border-line bg-white">
+      <BulkList className="overflow-hidden rounded-2xl border border-line bg-white">
         <BulkSelectAll noun={entryNoun} />
         {entries.map((entry) => (
-          <div key={entry.id} className="flex flex-wrap items-center gap-4 border-b border-line p-4 transition last:border-0 has-[[data-bulk]:checked]:bg-brand-soft/60">
+          <div key={entry.id} data-bulk-row={entry.id} className="flex flex-wrap items-center gap-3 border-b border-line p-4 transition last:border-0 has-[[data-bulk]:checked]:bg-brand-soft/60">
             <BulkCheckbox id={entry.id} label={entry.target_label || "Alvo sem nome"} />
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
@@ -77,7 +77,7 @@ export default async function DenylistPage({ searchParams }: { searchParams: Pro
             </form>
           </div>
         ))}
-      </div>
+      </BulkList>
       <BulkActionBar noun={entryNoun} actions={bulkActions} />
     </BulkSelectionProvider> : <EmptyState title="Nenhum bloqueio ativo" description="Adicione conversas ou contatos para impedir o salvamento de novas mensagens." />}
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Building2, Check, Repeat, X } from "lucide-react";
 import { bulkDeleteTasks, bulkSetTasksStatus } from "@/app/actions";
-import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkList, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { TaskCompleteButton } from "@/components/task-complete-button";
 import { TaskCreateForm } from "@/components/task-create-form";
 import { LiveCheckbox, LiveSearchInput, LiveSelect } from "@/components/live-filters";
@@ -197,7 +197,7 @@ export default async function TarefasPage({
 
       {taskList.length ? (
         <BulkSelectionProvider ids={taskList.map((task) => task.id)}>
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <BulkList className="overflow-hidden rounded-2xl border border-line bg-white">
             <BulkSelectAll noun={taskNoun} />
             {taskList.map((task) => {
               const overdue = isOverdue(task);
@@ -205,6 +205,7 @@ export default async function TarefasPage({
               return (
                 <div
                   key={task.id}
+                  data-bulk-row={task.id}
                   className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60 has-[[data-completing]]:opacity-40"
                 >
                   <BulkCheckbox id={task.id} label={label} />
@@ -232,7 +233,7 @@ export default async function TarefasPage({
                 </div>
               );
             })}
-          </div>
+          </BulkList>
           <BulkActionBar noun={taskNoun} actions={bulkActions} />
         </BulkSelectionProvider>
       ) : (

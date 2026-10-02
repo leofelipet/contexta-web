@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { bulkDeleteMemories } from "@/app/actions";
-import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkList, BulkSelectAll, BulkSelectionProvider } from "@/components/bulk-selection";
 import { MemoryCreateForm } from "@/components/memory-create-form";
 import { LiveSearchInput, LiveSelect } from "@/components/live-filters";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
@@ -227,10 +227,10 @@ export default async function MemoriasPage({
 
       {memoryList.length ? (
         <BulkSelectionProvider ids={memoryList.map((memory) => memory.id)}>
-          <div className="overflow-hidden rounded-2xl border border-line bg-white">
+          <BulkList className="overflow-hidden rounded-2xl border border-line bg-white">
             <BulkSelectAll noun={memoryNoun} />
             {memoryList.map((memory) => (
-              <div key={memory.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
+              <div key={memory.id} data-bulk-row={memory.id} className="flex items-center gap-3 border-b border-line pl-4 pr-3 transition last:border-0 hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60">
                 <BulkCheckbox id={memory.id} label={memory.title || "Sem título"} />
                 <Link
                   href={`/memorias/${encodeURIComponent(memory.id)}`}
@@ -253,7 +253,7 @@ export default async function MemoriasPage({
                 </Link>
               </div>
             ))}
-          </div>
+          </BulkList>
           <BulkActionBar noun={memoryNoun} actions={bulkActions} />
         </BulkSelectionProvider>
       ) : (

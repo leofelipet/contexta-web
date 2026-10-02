@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Ban, ListChecks, Search, X } from "lucide-react";
 import { bulkDeleteConversations } from "@/app/actions";
-import { type BulkAction, BulkActionBar, BulkCheckbox, BulkSelectAll, BulkSelectionProvider, useBulkSelection } from "@/components/bulk-selection";
+import { type BulkAction, BulkActionBar, BulkCheckbox, BulkList, BulkSelectAll, BulkSelectionProvider, useBulkSelection } from "@/components/bulk-selection";
 import { Avatar } from "@/components/ui";
 import { formatDate } from "@/lib/format";
 import { messageDisplay } from "@/lib/message-display";
@@ -147,13 +147,13 @@ function ConversationListInner({
   }
 
   return (
-    <BulkSelectionProvider ids={conversationIds}>
+    <BulkSelectionProvider ids={conversationIds} selecting={selecting} onSelectingChange={setSelecting}>
       <section className={`w-full shrink-0 border-r border-line bg-white lg:w-[360px] ${selectedId ? "hidden lg:block" : "block"}`}>
         <header className="border-b border-line p-4">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-xl font-semibold tracking-tight">Conversas</h1>
             {conversations.length > 0 && (
-              <SelectModeToggle selecting={selecting} onChange={setSelecting} />
+              <SelectModeToggle />
             )}
           </div>
           <div className="relative mt-4">
@@ -180,7 +180,8 @@ function ConversationListInner({
           </label>
         </header>
         <div ref={listRef} className="scrollbar overflow-y-auto lg:h-[calc(100vh-161px)]">
-          {selecting && <BulkSelectAll noun={conversationNoun} />}
+          {selecting && <BulkSelectAll noun={conversationNoun} toggle={false} />}
+          <BulkList>
           {conversations.length ? conversations.map((conversation) => {
             const name = conversation.title || "Conversa sem título";
             const message = conversation.last_message;
@@ -212,13 +213,14 @@ function ConversationListInner({
             );
             if (selecting) {
               return (
-                <label
+                <div
                   key={conversation.id}
+                  data-bulk-row={conversation.id}
                   className="flex cursor-pointer items-center gap-3 border-b border-line p-4 transition hover:bg-slate-50 has-[[data-bulk]:checked]:bg-brand-soft/60"
                 >
                   <BulkCheckbox id={conversation.id} label={name} />
                   {content}
-                </label>
+                </div>
               );
             }
             return (
@@ -235,6 +237,7 @@ function ConversationListInner({
               </Link>
             );
           }) : <div className="p-8 text-center text-sm text-muted">Nenhuma conversa encontrada.</div>}
+          </BulkList>
           {nextCursor && (
             <Link
               className="focus-ring m-4 block rounded-xl border border-line px-4 py-2.5 text-center text-xs font-semibold text-brand"
@@ -250,19 +253,16 @@ function ConversationListInner({
   );
 }
 
-function SelectModeToggle({ selecting, onChange }: { selecting: boolean; onChange: (selecting: boolean) => void }) {
-  const { clear } = useBulkSelection();
+function SelectModeToggle() {
+  const { selecting, setSelecting } = useBulkSelection();
   return (
     <button
       type="button"
-      onClick={() => {
-        clear();
-        onChange(!selecting);
-      }}
+      onClick={() => setSelecting(!selecting)}
       className={`focus-ring inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition ${selecting ? "bg-brand-soft text-brand" : "text-muted hover:bg-slate-100 hover:text-ink"}`}
     >
       {selecting ? <X size={14} /> : <ListChecks size={14} />}
-      {selecting ? "Cancelar" : "Selecionar"}
+      {selecting ? "Fechar" : "Selecionar"}
     </button>
   );
 }
