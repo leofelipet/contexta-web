@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { messageDisplay } from "@/lib/message-display";
@@ -14,6 +14,7 @@ export function MessageThread({ conversationId, initialMessages, initialCursor, 
   const viewportRef = useRef<HTMLDivElement>(null);
   const initializedRef = useRef(false);
   const previousHeightRef = useRef<number | null>(null);
+  const previousCountRef = useRef(initialMessages.length);
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
@@ -21,13 +22,42 @@ export function MessageThread({ conversationId, initialMessages, initialCursor, 
     if (!initializedRef.current) {
       viewport.scrollTop = viewport.scrollHeight;
       initializedRef.current = true;
+      previousCountRef.current = messages.length;
       return;
     }
     if (previousHeightRef.current !== null) {
       viewport.scrollTop += viewport.scrollHeight - previousHeightRef.current;
       previousHeightRef.current = null;
+    } else if (messages.length > previousCountRef.current) {
+      viewport.scrollTop = viewport.scrollHeight;
     }
+    previousCountRef.current = messages.length;
   }, [messages]);
+
+  useEffect(() => {
+    const source = new EventSource("/api/events");
+    source.addEventListener("messages", () => {
+      void (async () => {
+        try {
+          const response = await fetch(`/api/conversations/${encodeURIComponent(conversationId)}/messages?limit=50`);
+          if (!response.ok) return;
+          const payload = await response.json() as Message[] | { data: Message[] };
+          const newest = [...(Array.isArray(payload) ? payload : payload.data)].reverse();
+          setMessages((current) => {
+            const ids = new Set(current.map((item) => item.id));
+            const extra = newest.filter((item) => !ids.has(item.id));
+            if (!extra.length) {
+              return current.map((item) => newest.find((fresh) => fresh.id === item.id) ?? item);
+            }
+            return [...current, ...extra];
+          });
+        } catch {
+          // keep the open thread; the next event retries
+        }
+      })();
+    });
+    return () => source.close();
+  }, [conversationId]);
 
   async function loadOlder() {
     if (!cursor || loading) return;
