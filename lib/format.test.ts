@@ -4,6 +4,8 @@ import { contactName, formatBytes, formatDate, formatUptime, initials } from "./
 describe("format utilities", () => {
   it("uses a stable contact fallback order", () => {
     expect(contactName({ push_name: "Ana", phone: "5511" })).toBe("Ana");
+    expect(contactName({ name: "5511999999999", push_name: "Ana", phone: "5511999999999" })).toBe("Ana");
+    expect(contactName({ name: "5511999999999@s.whatsapp.net", phone: "5511999999999" })).toBe("5511999999999");
     expect(contactName(null)).toBe("Contato sem nome");
   });
   it("creates at most two initials", () => expect(initials("Ana Maria Silva")).toBe("AM"));

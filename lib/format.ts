@@ -50,5 +50,16 @@ export function initials(name?: string | null) {
 }
 
 export function contactName(contact?: { name?: string | null; push_name?: string | null; phone?: string | null } | null) {
-  return contact?.name || contact?.push_name || contact?.phone || "Contato sem nome";
+  const phone = contact?.phone?.trim() || "";
+  for (const value of [contact?.name, contact?.push_name]) {
+    const name = value?.trim() || "";
+    if (name && !isPlaceholderContactName(name, phone)) return name;
+  }
+  return phone || "Contato sem nome";
+}
+
+function isPlaceholderContactName(name: string, phone: string) {
+  if (phone && name === phone) return true;
+  if (name.includes("@")) return true;
+  return /^\+?\d{8,}$/.test(name);
 }
