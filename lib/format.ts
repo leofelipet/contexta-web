@@ -1,10 +1,21 @@
+export const DISPLAY_TIMEZONE = "America/Sao_Paulo";
+
+function yearInTimeZone(date: Date) {
+  return Number(new Intl.DateTimeFormat("en-US", { timeZone: DISPLAY_TIMEZONE, year: "numeric" }).format(date));
+}
+
 export function formatDate(value?: string | null, withTime = true) {
   if (!value) return "Não disponível";
   const date = new Date(value);
   if (Number.isNaN(date.valueOf())) return "Não disponível";
   return new Intl.DateTimeFormat("pt-BR", {
-    day: "2-digit", month: "short", year: date.getFullYear() !== new Date().getFullYear() ? "numeric" : undefined,
-    hour: withTime ? "2-digit" : undefined, minute: withTime ? "2-digit" : undefined,
+    timeZone: DISPLAY_TIMEZONE,
+    day: "2-digit",
+    month: "short",
+    year: yearInTimeZone(date) !== yearInTimeZone(new Date()) ? "numeric" : undefined,
+    hour: withTime ? "2-digit" : undefined,
+    minute: withTime ? "2-digit" : undefined,
+    hour12: false,
   }).format(date);
 }
 

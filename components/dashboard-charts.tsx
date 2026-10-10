@@ -14,6 +14,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { DISPLAY_TIMEZONE } from "@/lib/format";
 import type { DashboardNamedCount, DashboardTrafficDay } from "@/lib/types";
 
 const inboundColor = "#087f5b";
@@ -23,7 +24,7 @@ const typeColors = ["#087f5b", "#0ca678", "#38bdf8", "#64748b", "#f59e0b", "#ef4
 function formatDayLabel(value: string) {
   const date = new Date(`${value}T12:00:00Z`);
   if (Number.isNaN(date.valueOf())) return value;
-  return new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(date);
+  return new Intl.DateTimeFormat("pt-BR", { timeZone: DISPLAY_TIMEZONE, day: "2-digit", month: "short" }).format(date);
 }
 
 function ChartTooltip({
