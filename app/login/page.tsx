@@ -1,10 +1,23 @@
 import type { Metadata } from "next";
 import { MessageCircle, ShieldCheck } from "lucide-react";
 import { LoginForm } from "@/components/login-form";
+import { isPasswordEnabled } from "@/lib/auth-settings";
+import { listPasskeys } from "@/lib/passkeys";
 
 export const metadata: Metadata = { title: "Entrar" };
+export const dynamic = "force-dynamic";
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const passwordEnabled = isPasswordEnabled();
+  const passkeysAvailable = (await listPasskeys()).length > 0;
+  const description = !passwordEnabled && !passkeysAvailable
+    ? "Não há um método de acesso disponível neste momento."
+    : !passwordEnabled
+      ? "Acesse o ambiente administrativo com sua passkey."
+      : passkeysAvailable
+        ? "Acesse com sua senha ou com uma passkey."
+        : "Acesse o ambiente administrativo com sua senha.";
+
   return <main className="grid min-h-screen lg:grid-cols-[1.05fr_.95fr]">
     <section className="relative hidden overflow-hidden bg-[#12352b] p-12 text-white lg:flex lg:flex-col lg:justify-between">
       <div className="absolute -right-24 -top-24 size-96 rounded-full border border-white/10" /><div className="absolute -bottom-40 left-20 size-[32rem] rounded-full border border-white/10" />
@@ -14,7 +27,7 @@ export default function LoginPage() {
     </section>
     <section className="flex items-center justify-center bg-paper p-6"><div className="w-full max-w-md rounded-3xl border border-line bg-white p-7 shadow-[0_24px_70px_-35px_rgba(15,45,35,.35)] md:p-10">
       <div className="mb-10 flex items-center gap-3 font-bold lg:hidden"><span className="grid size-9 place-items-center rounded-xl bg-brand text-white"><MessageCircle size={19} fill="currentColor" /></span>contexta.</div>
-      <span className="grid size-11 place-items-center rounded-2xl bg-brand-soft text-brand"><ShieldCheck size={23} /></span><h2 className="mt-5 text-3xl font-semibold tracking-tight">Boas-vindas</h2><p className="mt-2 text-sm leading-6 text-muted">Acesse o ambiente administrativo com sua senha.</p><LoginForm />
+      <span className="grid size-11 place-items-center rounded-2xl bg-brand-soft text-brand"><ShieldCheck size={23} /></span><h2 className="mt-5 text-3xl font-semibold tracking-tight">Boas-vindas</h2><p className="mt-2 text-sm leading-6 text-muted">{description}</p><LoginForm passwordEnabled={passwordEnabled} passkeysAvailable={passkeysAvailable} />
     </div></section>
   </main>;
 }

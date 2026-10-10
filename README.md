@@ -6,7 +6,8 @@ The application is built with Next.js, React, TypeScript, and Tailwind CSS. It a
 
 ## Features
 
-- Single-user administrative login
+- Single-user administrative login with optional passkeys
+- 7-day HTTP-only session cookie
 - Dashboard with contacts, conversations, messages, and integration health
 - Responsive conversation explorer with incremental history loading
 - Contact directory and full-text message search
@@ -36,6 +37,7 @@ CONTEXTA_API_URL=http://localhost:8080
 CONTEXTA_API_TOKEN=the-backend-api-bearer-token
 SESSION_SECRET=at-least-32-random-characters
 SESSION_COOKIE_SECURE=false
+ADMIN_PASSWORD_ENABLED=true
 ```
 
 Start the development server:
@@ -45,6 +47,17 @@ pnpm dev
 ```
 
 The interface is available at `http://localhost:3000`.
+
+## Passkeys
+
+After signing in with the password, open **Sistema → Acesso** and register a passkey (Face ID, Windows Hello, or a security key). Sessions last 7 days.
+
+Passkeys are stored in the Contexta PostgreSQL database, so they survive container rebuilds without extra volumes.
+
+To require passkeys only:
+
+1. Register at least one passkey.
+2. Set `ADMIN_PASSWORD_ENABLED=false` and restart the app.
 
 ## Production
 
@@ -62,7 +75,7 @@ docker build -t contexta-web .
 docker run --rm -p 3000:3000 --env-file .env.local contexta-web
 ```
 
-Production deployments must use HTTPS, set `SESSION_COOKIE_SECURE=true`, and apply reverse-proxy rate limiting to `/login` in addition to the in-process limiter.
+Production deployments must use HTTPS, set `SESSION_COOKIE_SECURE=true`, and apply reverse-proxy rate limiting to `/login` and `/api/passkeys/login` in addition to the in-process limiter.
 
 ## Checks
 

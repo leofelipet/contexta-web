@@ -18,6 +18,15 @@ export async function apiFetch<T>(path: string, options: {
   acceptStatus?: number[];
 } = {}): Promise<T> {
   await requireSession();
+  return backendFetch<T>(path, options);
+}
+
+export async function backendFetch<T>(path: string, options: {
+  query?: Record<string, QueryValue>;
+  method?: "GET" | "POST" | "PATCH" | "DELETE";
+  body?: unknown;
+  acceptStatus?: number[];
+} = {}): Promise<T> {
   const base = process.env.CONTEXTA_API_URL;
   const token = process.env.CONTEXTA_API_TOKEN;
   if (!base || !token) throw new Error("Configuração do backend ausente");

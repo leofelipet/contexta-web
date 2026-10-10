@@ -10,16 +10,20 @@ import { companyApiErrorMessage, companyBody, companyReturnPath } from "@/lib/co
 import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
 import { scheduleApiErrorMessage, scheduleBody, ScheduleFormError } from "@/lib/schedule-form";
 import type { Company, EmailAccount, EmailTestResult, TaskSchedule } from "@/lib/types";
+import { isPasswordEnabled } from "@/lib/auth-settings";
+import { PasskeyError } from "@/lib/passkeys-store";
+import { deleteStoredPasskey } from "@/lib/passkeys";
+import { requestClient } from "@/lib/request-client";
 import { clearSession, createSession, requireSession } from "@/lib/session";
 import { clearClientAttempts, loginAllowed, recordFailedLogin } from "@/lib/login-rate-limit";
 
 export type LoginState = { error?: string };
 
 export async function login(_: LoginState, formData: FormData): Promise<LoginState> {
+  if (!isPasswordEnabled()) return { error: "O login por senha está desativado. Use uma passkey." };
   const password = formData.get("password");
   const hash = process.env.ADMIN_PASSWORD_HASH;
-  const requestHeaders = await headers();
-  const client = requestHeaders.get("x-forwarded-for")?.split(",")[0]?.trim() || requestHeaders.get("x-real-ip") || "unknown";
+  const client = requestClient(await headers());
   if (!loginAllowed(client)) return { error: "Muitas tentativas. Aguarde alguns minutos." };
   if (typeof password !== "string" || password.length > 256 || !hash || !(await compare(password, hash))) {
     recordFailedLogin(client);
@@ -34,6 +38,18 @@ export async function logout() {
   await requireSession();
   await clearSession();
   redirect("/login");
+}
+
+export async function deletePasskey(id: string): Promise<{ error?: string }> {
+  await requireSession();
+  try {
+    await deleteStoredPasskey(String(id).trim(), isPasswordEnabled());
+  } catch (error) {
+    if (error instanceof PasskeyError) return { error: error.message };
+    throw error;
+  }
+  revalidatePath("/acesso");
+  return {};
 }
 
 export async function configureWebhook() {

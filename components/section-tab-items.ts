@@ -17,4 +17,5 @@ export const integracoesTabs = [
 export const sistemaTabs = [
   { href: "/sistema", label: "Saúde" },
   { href: "/logs", label: "Atividade" },
+  { href: "/acesso", label: "Acesso" },
 ];
