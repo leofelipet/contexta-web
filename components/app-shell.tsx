@@ -134,7 +134,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </aside>
         </div>
       )}
-      <main className="min-h-screen pb-20 md:pb-0">{children}</main>
+      <main className="min-h-screen pb-[calc(4.25rem+env(safe-area-inset-bottom))] md:pb-0">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-line bg-white px-1 pb-[env(safe-area-inset-bottom)] md:hidden">
         {mobileItems.map((item) => {
           const Icon = item.icon;
@@ -143,7 +143,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 py-2 text-[10px] font-semibold ${active ? "text-brand" : "text-muted"}`}
+              className={`flex min-h-16 flex-col items-center justify-center gap-1 py-2 text-[10px] font-semibold ${active ? "text-brand" : "text-muted"}`}
             >
               <Icon size={20} />
               {item.label}

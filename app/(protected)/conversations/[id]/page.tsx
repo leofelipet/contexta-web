@@ -49,7 +49,7 @@ export default async function ConversationPage({
   const backHref = backParams.size ? `/conversations?${backParams}` : "/conversations";
 
   return (
-    <div className="flex h-[calc(100vh-64px)] overflow-hidden md:h-screen">
+    <div className="flex h-[calc(100dvh-64px)] min-h-0 overflow-hidden md:h-screen">
       <ConversationList
         conversations={itemsFrom(listPayload)}
         selectedId={id}
@@ -60,11 +60,11 @@ export default async function ConversationPage({
         blockedConversationIds={blockedConversationIds}
         blockedContactIds={blockedContactIds}
       />
-      <section className="flex min-w-0 flex-1 flex-col bg-chat">
-        <header className="flex h-[70px] shrink-0 items-center gap-3 border-b border-line bg-white px-4">
+      <section className="flex min-w-0 flex-1 flex-col overflow-hidden bg-chat">
+        <header className="flex min-h-[70px] shrink-0 items-center gap-2 border-b border-line bg-white px-3 py-2 sm:gap-3 sm:px-4">
           <Link href={backHref} aria-label="Voltar" className="focus-ring rounded-lg p-2 text-muted lg:hidden"><ArrowLeft size={20} /></Link>
           <Avatar name={name} size="sm" />
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 px-1">
             <h1 className="truncate text-sm font-semibold">{name}</h1>
             <p className="truncate text-xs text-muted">{conversation.type === "group" ? "Grupo" : "Histórico da conversa"}</p>
           </div>

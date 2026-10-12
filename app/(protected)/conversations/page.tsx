@@ -30,7 +30,7 @@ export default async function ConversationsPage({
   const blockedContactIds = denylist.filter((entry) => entry.target_type === "contact").map((entry) => entry.target_id);
 
   return (
-    <div className="flex min-h-[calc(100vh-64px)] md:min-h-screen">
+    <div className="flex h-[calc(100dvh-64px)] min-h-0 md:h-screen">
       <ConversationList
         conversations={itemsFrom(payload)}
         query={filters.q}

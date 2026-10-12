@@ -19,7 +19,7 @@ export function BlockConversationButton({
 
   if (alreadyBlocked) {
     return (
-      <span className="inline-flex items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
+      <span className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-amber-50 px-2.5 py-1.5 text-xs font-semibold text-amber-800 ring-1 ring-inset ring-amber-200">
         <Ban size={14} />Bloqueada
       </span>
     );
@@ -31,7 +31,7 @@ export function BlockConversationButton({
         type="button"
         aria-label="Bloquear conversa"
         onClick={() => setOpen(true)}
-        className="focus-ring rounded-lg p-2 text-muted hover:bg-red-50 hover:text-red-700"
+        className="focus-ring shrink-0 rounded-lg p-2 text-muted hover:bg-red-50 hover:text-red-700"
         title="Bloquear conversa"
       >
         <Ban size={20} />

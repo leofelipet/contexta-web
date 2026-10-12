@@ -43,7 +43,7 @@ type ConversationListProps = {
 
 export function ConversationList(props: ConversationListProps) {
   return (
-    <Suspense fallback={<section className="w-full shrink-0 border-r border-line bg-white lg:w-[360px]"><div className="p-4 text-sm text-muted">Carregando conversas...</div></section>}>
+    <Suspense fallback={<section className="flex h-full min-h-0 w-full shrink-0 flex-col border-r border-line bg-white lg:w-[360px]"><div className="p-4 text-sm text-muted">Carregando conversas...</div></section>}>
       <ConversationListInner {...props} />
     </Suspense>
   );
@@ -148,8 +148,8 @@ function ConversationListInner({
 
   return (
     <BulkSelectionProvider ids={conversationIds} selecting={selecting} onSelectingChange={setSelecting}>
-      <section className={`w-full shrink-0 border-r border-line bg-white lg:w-[360px] ${selectedId ? "hidden lg:block" : "block"}`}>
-        <header className="border-b border-line p-4">
+      <section className={`h-full min-h-0 w-full shrink-0 flex-col border-r border-line bg-white lg:w-[360px] ${selectedId ? "hidden lg:flex" : "flex"}`}>
+        <header className="shrink-0 border-b border-line p-4">
           <div className="flex items-center justify-between gap-2">
             <h1 className="text-xl font-semibold tracking-tight">Conversas</h1>
             {conversations.length > 0 && (
@@ -179,7 +179,7 @@ function ConversationListInner({
             </select>
           </label>
         </header>
-        <div ref={listRef} className="scrollbar overflow-y-auto lg:h-[calc(100vh-161px)]">
+        <div ref={listRef} className="scrollbar min-h-0 flex-1 overflow-y-auto">
           {selecting && <BulkSelectAll noun={conversationNoun} toggle={false} />}
           <BulkList>
           {conversations.length ? conversations.map((conversation) => {
@@ -231,7 +231,7 @@ function ConversationListInner({
                 onClick={() => {
                   if (listRef.current) sessionStorage.setItem(SCROLL_KEY, String(listRef.current.scrollTop));
                 }}
-                className={`focus-ring flex gap-3 border-b border-line p-4 transition ${selected ? "bg-brand-soft" : "hover:bg-slate-50"}`}
+                className={`focus-ring flex min-w-0 gap-3 border-b border-line p-4 transition ${selected ? "bg-brand-soft" : "hover:bg-slate-50"}`}
               >
                 {content}
               </Link>

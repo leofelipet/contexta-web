@@ -76,7 +76,7 @@ export function MessageThread({ conversationId, initialMessages, initialCursor, 
     finally { setLoading(false); }
   }
 
-  return <div ref={viewportRef} className="chat-grid scrollbar flex-1 overflow-y-auto px-4 pb-24 pt-5 md:px-8 md:pb-5">
+  return <div ref={viewportRef} className="chat-grid scrollbar min-h-0 flex-1 overflow-y-auto px-3 pb-[calc(5.25rem+env(safe-area-inset-bottom))] pt-4 sm:px-4 md:px-8 md:pb-5">
     <div className="mx-auto flex max-w-3xl flex-col gap-2">
       {cursor && <button onClick={loadOlder} disabled={loading} className="focus-ring mx-auto mb-3 flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-semibold text-muted shadow-sm">{loading && <LoaderCircle className="animate-spin" size={14} />}Carregar mensagens anteriores</button>}
       {error && <p className="mb-2 text-center text-xs text-red-700">{error}</p>}
@@ -85,11 +85,11 @@ export function MessageThread({ conversationId, initialMessages, initialCursor, 
         const outbound = message.direction === "outbound";
         const display = messageDisplay(message);
         const senderLabel = isGroup && !outbound && message.sender?.trim() ? message.sender.trim() : null;
-        return <div key={message.id} className={`max-w-[88%] rounded-2xl px-3.5 py-2.5 shadow-sm md:max-w-[72%] ${outbound ? "ml-auto rounded-br-md bg-[#d9fdd3]" : "mr-auto rounded-bl-md bg-white"}`}>
+        return <div key={message.id} className={`max-w-[92%] overflow-hidden rounded-2xl px-3.5 py-2.5 shadow-sm sm:max-w-[88%] md:max-w-[72%] ${outbound ? "ml-auto rounded-br-md bg-[#d9fdd3]" : "mr-auto rounded-bl-md bg-white"}`}>
           {senderLabel && <p className="mb-0.5 text-[11px] font-semibold text-brand">{senderLabel}</p>}
           {display.audioLabel && <p className="mb-1 text-[11px] font-semibold text-brand">{display.audioLabel}</p>}
           <p className="whitespace-pre-wrap break-words text-sm leading-5">{display.text}</p>
-          <div className="mt-1 flex items-center justify-end gap-1.5 text-[10px] text-muted"><time>{formatDate(message.timestamp)}</time>{outbound && message.status && <span>· {message.status}</span>}</div>
+          <div className="mt-1 flex flex-wrap items-center justify-end gap-x-1.5 gap-y-0.5 text-[10px] text-muted"><time>{formatDate(message.timestamp)}</time>{outbound && message.status && <span>· {message.status}</span>}</div>
         </div>;
       })}
     </div>
