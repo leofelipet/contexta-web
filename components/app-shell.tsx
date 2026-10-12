@@ -113,17 +113,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
       <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-line bg-white/95 px-4 backdrop-blur md:hidden">
         <Brand compact />
-        <button aria-label="Abrir menu" onClick={() => setOpen(true)} className="focus-ring rounded-lg p-2">
+        <button type="button" aria-label="Abrir menu" aria-controls="mobile-navigation" aria-expanded={open} onClick={() => setOpen(true)} className="focus-ring rounded-lg p-2">
           <Menu />
         </button>
       </header>
       {open && (
         <div className="fixed inset-0 z-50 md:hidden">
-          <button aria-label="Fechar menu" className="absolute inset-0 bg-ink/30" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 right-0 flex w-72 flex-col bg-white p-5 shadow-xl">
+          <button type="button" aria-label="Fechar menu" className="absolute inset-0 bg-ink/30" onClick={() => setOpen(false)} />
+          <aside id="mobile-navigation" className="relative z-10 flex h-full w-72 ml-auto flex-col bg-white p-5 shadow-xl">
             <div className="mb-8 flex items-center justify-between">
               <Brand compact />
-              <button aria-label="Fechar menu" onClick={() => setOpen(false)} className="p-2">
+              <button type="button" aria-label="Fechar menu" onClick={() => setOpen(false)} className="p-2">
                 <X />
               </button>
             </div>
