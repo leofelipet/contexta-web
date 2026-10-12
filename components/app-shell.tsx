@@ -49,7 +49,7 @@ const groups: NavGroup[] = [
     label: "Operação",
     items: [
       { href: "/denylist", label: "Manutenção", icon: HardDrive, match: ["/denylist", "/limpeza"] },
-      { href: "/whatsapp", label: "Integrações", icon: PlugZap, match: ["/whatsapp", "/mcp", "/email"] },
+      { href: "/whatsapp", label: "Integrações", icon: PlugZap, match: ["/whatsapp", "/mcp", "/email", "/pushover"] },
       { href: "/sistema", label: "Sistema", icon: Server, match: ["/sistema", "/logs", "/acesso"] },
     ],
   },

@@ -58,6 +58,49 @@ export async function configureWebhook() {
   redirect("/whatsapp?configured=1");
 }
 
+export type PushoverFormState = { error?: string; saved?: boolean; sent?: boolean };
+
+export async function configurePushover(_: PushoverFormState, formData: FormData): Promise<PushoverFormState> {
+  await requireSession();
+  const appToken = String(formData.get("app_token") || "").trim();
+  const userKey = String(formData.get("user_key") || "").trim();
+  try {
+    await apiFetch("/api/v1/integrations/pushover", {
+      method: "PATCH",
+      body: {
+        ...(appToken ? { app_token: appToken } : {}),
+        ...(userKey ? { user_key: userKey } : {}),
+        enabled: formData.get("enabled") === "on",
+      },
+    });
+  } catch (error) {
+    if (error instanceof ApiError) return { error: error.detail || "Não foi possível salvar a integração." };
+    return { error: "Não foi possível salvar a integração." };
+  }
+  revalidatePath("/pushover");
+  return { saved: true };
+}
+
+export async function sendPushover(_: PushoverFormState, formData: FormData): Promise<PushoverFormState> {
+  await requireSession();
+  const priority = Number(formData.get("priority") || 0);
+  try {
+    await apiFetch("/api/v1/integrations/pushover/send", {
+      method: "POST",
+      body: {
+        message: String(formData.get("message") || "").trim(),
+        title: String(formData.get("title") || "").trim(),
+        priority,
+        url: String(formData.get("url") || "").trim(),
+      },
+    });
+  } catch (error) {
+    if (error instanceof ApiError) return { error: error.detail || "Não foi possível enviar a notificação." };
+    return { error: "Não foi possível enviar a notificação." };
+  }
+  return { sent: true };
+}
+
 export async function addDenylistEntry(formData: FormData) {
   await requireSession();
   const targetType = String(formData.get("target_type") || "").trim();

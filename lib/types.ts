@@ -91,6 +91,13 @@ export type UazapiIntegration = {
   checked_at: string;
 };
 
+export type PushoverIntegration = {
+  configured: boolean;
+  enabled: boolean;
+  created_at?: string;
+  updated_at?: string;
+};
+
 export type McpStatus = {
   enabled: boolean;
   endpoint: string;

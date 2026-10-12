@@ -12,6 +12,7 @@ export const integracoesTabs = [
   { href: "/whatsapp", label: "WhatsApp" },
   { href: "/mcp", label: "MCP" },
   { href: "/email", label: "E-mail" },
+  { href: "/pushover", label: "Pushover" },
 ];
 
 export const sistemaTabs = [
