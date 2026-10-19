@@ -4,12 +4,12 @@ import { useActionState, useEffect } from "react";
 import { BellRing, Check, LoaderCircle, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { configurePushover, sendPushover, type PushoverFormState } from "@/app/actions";
-import type { PushoverIntegration } from "@/lib/types";
+import type { PushoverIntegration, PushoverSound } from "@/lib/types";
 
 const initialState: PushoverFormState = {};
 const inputClass = "focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm";
 
-export function PushoverForms({ integration }: { integration: PushoverIntegration }) {
+export function PushoverForms({ integration, sounds }: { integration: PushoverIntegration; sounds: PushoverSound[] }) {
   const router = useRouter();
   const [settings, configureAction, configuring] = useActionState(configurePushover, initialState);
   const [notification, sendAction, sending] = useActionState(sendPushover, initialState);
@@ -42,8 +42,9 @@ export function PushoverForms({ integration }: { integration: PushoverIntegratio
           <label className="block text-sm"><span className="mb-1.5 block font-medium">Título</span><input name="title" maxLength={250} className={inputClass} placeholder="Contexta" /></label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm"><span className="mb-1.5 block font-medium">Prioridade</span><select name="priority" defaultValue="0" className={`${inputClass} bg-white`}><option value="-2">Silenciosa</option><option value="-1">Baixa</option><option value="0">Normal</option><option value="1">Alta</option></select></label>
-            <label className="block text-sm"><span className="mb-1.5 block font-medium">URL</span><input name="url" type="url" className={inputClass} placeholder="https://..." /></label>
+            <label className="block text-sm"><span className="mb-1.5 block font-medium">Som</span><select name="sound" defaultValue="" className={`${inputClass} bg-white`}><option value="">Padrão do dispositivo</option>{sounds.map((sound) => <option key={sound.id} value={sound.id}>{sound.name}</option>)}</select></label>
           </div>
+          <label className="block text-sm"><span className="mb-1.5 block font-medium">URL</span><input name="url" type="url" className={inputClass} placeholder="https://..." /></label>
           {notification.error ? <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm text-red-700">{notification.error}</p> : null}
           {notification.sent ? <p role="status" className="flex items-center gap-2 rounded-xl bg-emerald-50 px-3 py-2.5 text-sm text-emerald-700"><Check size={16} />Notificação enviada.</p> : null}
           <button disabled={sending || !integration.configured || !integration.enabled} className="focus-ring inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-60">{sending ? <LoaderCircle className="animate-spin" size={16} /> : <BellRing size={16} />}Enviar agora</button>

@@ -92,6 +92,7 @@ export async function sendPushover(_: PushoverFormState, formData: FormData): Pr
         title: String(formData.get("title") || "").trim(),
         priority,
         url: String(formData.get("url") || "").trim(),
+        sound: String(formData.get("sound") || "").trim(),
       },
     });
   } catch (error) {

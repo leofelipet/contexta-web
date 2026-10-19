@@ -98,6 +98,11 @@ export type PushoverIntegration = {
   updated_at?: string;
 };
 
+export type PushoverSound = {
+  id: string;
+  name: string;
+};
+
 export type McpStatus = {
   enabled: boolean;
   endpoint: string;
