@@ -93,6 +93,14 @@ describe("schedule body", () => {
     expect(scheduleBody(form(values), true)).toMatchObject({ company_id: "" });
   });
 
+  it("sends notification settings", () => {
+    expect(scheduleBody(form(values), false)).toMatchObject({ notify: false, notify_priority: 0, notify_sound: "" });
+    expect(scheduleBody(form({ ...values, notify: "on", notify_priority: "2", notify_sound: "siren" }), true)).toMatchObject({
+      notify: true, notify_priority: 2, notify_sound: "siren",
+    });
+    expect(scheduleBody(form({ ...values, notify_priority: "9" }), false)).toMatchObject({ notify_priority: 0 });
+  });
+
   it("reports incomplete frequency and invalid due", () => {
     expect(() => scheduleBody(form({ ...values, time: "" }), false)).toThrow(ScheduleFormError);
     expect(() => scheduleBody(form({ ...values, due_hours: "-1" }), false)).toThrow(ScheduleFormError);
@@ -102,6 +110,7 @@ describe("schedule body", () => {
     expect(scheduleApiErrorMessage(400, "invalid argument: invalid cron expression: fires more often than every 5m0s")).toContain("5 minutos");
     expect(scheduleApiErrorMessage(400, "invalid argument: invalid cron expression: unknown timezone")).toContain("Fuso");
     expect(scheduleApiErrorMessage(400, "invalid argument: invalid cron expression: expected exactly 5 fields")).toContain("Expressão cron");
+    expect(scheduleApiErrorMessage(400, "invalid argument: invalid notification: sound must be a Pushover sound id")).toContain("Notificação");
     expect(scheduleApiErrorMessage(404)).toContain("não encontrad");
   });
 });

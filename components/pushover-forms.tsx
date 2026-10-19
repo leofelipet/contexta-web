@@ -4,6 +4,7 @@ import { useActionState, useEffect } from "react";
 import { BellRing, Check, LoaderCircle, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { configurePushover, sendPushover, type PushoverFormState } from "@/app/actions";
+import { pushoverPriorities } from "@/lib/pushover-options";
 import type { PushoverIntegration, PushoverSound } from "@/lib/types";
 
 const initialState: PushoverFormState = {};
@@ -41,8 +42,8 @@ export function PushoverForms({ integration, sounds }: { integration: PushoverIn
           <label className="block text-sm"><span className="mb-1.5 block font-medium">Mensagem</span><textarea name="message" required maxLength={1024} rows={5} className={inputClass} placeholder="O que você precisa saber?" /></label>
           <label className="block text-sm"><span className="mb-1.5 block font-medium">Título</span><input name="title" maxLength={250} className={inputClass} placeholder="Contexta" /></label>
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm"><span className="mb-1.5 block font-medium">Prioridade</span><select name="priority" defaultValue="0" className={`${inputClass} bg-white`}><option value="-2">Silenciosa</option><option value="-1">Baixa</option><option value="0">Normal</option><option value="1">Alta</option></select></label>
-            <label className="block text-sm"><span className="mb-1.5 block font-medium">Som</span><select name="sound" defaultValue="" className={`${inputClass} bg-white`}><option value="">Padrão do dispositivo</option>{sounds.map((sound) => <option key={sound.id} value={sound.id}>{sound.name}</option>)}</select></label>
+            <label className="block text-sm"><span className="mb-1.5 block font-medium">Prioridade</span><select name="priority" defaultValue="0" className={`${inputClass} bg-white`}>{pushoverPriorities.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></label>
+            <label className="block text-sm"><span className="mb-1.5 block font-medium">Som</span><select name="sound" defaultValue="" className={`${inputClass} bg-white`}><SoundOptions sounds={sounds} /></select></label>
           </div>
           <label className="block text-sm"><span className="mb-1.5 block font-medium">URL</span><input name="url" type="url" className={inputClass} placeholder="https://..." /></label>
           {notification.error ? <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm text-red-700">{notification.error}</p> : null}
@@ -54,4 +55,14 @@ export function PushoverForms({ integration, sounds }: { integration: PushoverIn
       </section>
     </div>
   );
+}
+
+export function SoundOptions({ sounds, current }: { sounds: PushoverSound[]; current?: string | null }) {
+  // Keep a saved sound selectable even when the listing is unavailable or no longer has it.
+  const missing = current && !sounds.some((sound) => sound.id === current);
+  return <>
+    <option value="">Padrão do dispositivo</option>
+    {missing ? <option value={current}>{current}</option> : null}
+    {sounds.map((sound) => <option key={sound.id} value={sound.id}>{sound.name}</option>)}
+  </>;
 }

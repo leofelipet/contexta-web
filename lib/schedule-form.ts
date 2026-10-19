@@ -1,3 +1,5 @@
+import { priorityFromForm } from "@/lib/pushover-options";
+
 export const DEFAULT_TIMEZONE = "America/Sao_Paulo";
 
 export type FrequencyMode = "daily" | "weekdays" | "weekly" | "monthly" | "hourly" | "custom";
@@ -157,6 +159,9 @@ export function scheduleBody(formData: FormData, editing: boolean) {
     contact_id: text("contact_id"),
     skip_if_open: formData.get("skip_if_open") === "on",
     enabled: formData.get("enabled") === "on",
+    notify: formData.get("notify") === "on",
+    notify_priority: priorityFromForm(formData.get("notify_priority")),
+    notify_sound: text("notify_sound"),
   };
   if (editing) return { ...body, due_in_minutes: dueInMinutes ?? 0 };
   return dueInMinutes ? { ...body, due_in_minutes: dueInMinutes } : body;
@@ -168,6 +173,7 @@ export function scheduleApiErrorMessage(status: number, detail?: string) {
     if (detail.includes("timezone")) return "Fuso horário desconhecido. Use um nome IANA, como America/Sao_Paulo.";
     return "Expressão cron inválida. Use 5 campos (minuto hora dia mês dia-da-semana), ex.: 0 9 * * 1-5.";
   }
+  if (status === 400 && detail?.includes("invalid notification")) return "Notificação inválida. Confira a prioridade e o som.";
   if (status === 400) return "Dados inválidos. Confira título, frequência e prazo.";
   if (status === 404) return "Recorrência, empresa, conversa ou contato não encontrado.";
   return "Não foi possível salvar agora. Tente novamente.";

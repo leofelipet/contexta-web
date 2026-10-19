@@ -6,6 +6,7 @@ import { setTaskScheduleEnabled } from "@/app/actions";
 import { TaskScheduleForm } from "@/components/task-schedule-form";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
+import { loadPushoverSounds } from "@/lib/pushover";
 import { formatDate } from "@/lib/format";
 import { describeCron } from "@/lib/schedule-form";
 import type { Company, Contact, Conversation, Paginated, Task, TaskSchedule } from "@/lib/types";
@@ -37,11 +38,12 @@ export default async function RecorrenteDetailPage({
     notFound();
   }
 
-  const [conversationsPayload, contactsPayload, tasksPayload, companiesPayload] = await Promise.all([
+  const [conversationsPayload, contactsPayload, tasksPayload, companiesPayload, sounds] = await Promise.all([
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { limit: 200 } }),
     apiFetch<Task[] | Paginated<Task>>("/api/v1/tasks", { query: { schedule_id: schedule.id, limit: 20 } }),
     apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
+    loadPushoverSounds(),
   ]);
   const createdTasks = itemsFrom(tasksPayload);
 
@@ -87,6 +89,7 @@ export default async function RecorrenteDetailPage({
           conversations={itemsFrom(conversationsPayload)}
           contacts={itemsFrom(contactsPayload)}
           companies={itemsFrom(companiesPayload)}
+          sounds={sounds}
         />
       </section>
 

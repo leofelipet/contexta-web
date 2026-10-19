@@ -1,6 +1,7 @@
 export const tarefasTabs = [
   { href: "/tarefas", label: "Tarefas" },
   { href: "/recorrentes", label: "Recorrentes" },
+  { href: "/lembretes", label: "Lembretes" },
 ];
 
 export const manutencaoTabs = [

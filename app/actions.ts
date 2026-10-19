@@ -8,6 +8,8 @@ import { ApiError, apiFetch } from "@/lib/api";
 import { bulkIds, type BulkResult } from "@/lib/bulk";
 import { companyApiErrorMessage, companyBody, companyReturnPath } from "@/lib/company-form";
 import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
+import { priorityFromForm } from "@/lib/pushover-options";
+import { reminderApiErrorMessage, reminderBody, ReminderFormError } from "@/lib/reminder-form";
 import { scheduleApiErrorMessage, scheduleBody, ScheduleFormError } from "@/lib/schedule-form";
 import type { Company, EmailAccount, EmailTestResult, TaskSchedule } from "@/lib/types";
 import { isPasswordEnabled } from "@/lib/auth-settings";
@@ -83,7 +85,7 @@ export async function configurePushover(_: PushoverFormState, formData: FormData
 
 export async function sendPushover(_: PushoverFormState, formData: FormData): Promise<PushoverFormState> {
   await requireSession();
-  const priority = Number(formData.get("priority") || 0);
+  const priority = priorityFromForm(formData.get("priority"));
   try {
     await apiFetch("/api/v1/integrations/pushover/send", {
       method: "POST",
@@ -336,6 +338,29 @@ export async function deleteTaskSchedule(formData: FormData) {
   const id = String(formData.get("id") || "").trim();
   await apiFetch(`/api/v1/task-schedules/${encodeURIComponent(id)}`, { method: "DELETE" });
   redirect("/recorrentes?deleted=1");
+}
+
+export type ReminderFormState = { error?: string; created?: number };
+
+export async function createReminder(_: ReminderFormState, formData: FormData): Promise<ReminderFormState> {
+  await requireSession();
+  try {
+    await apiFetch("/api/v1/reminders", { method: "POST", body: reminderBody(formData) });
+  } catch (error) {
+    if (error instanceof ReminderFormError) return { error: error.message };
+    if (error instanceof ApiError) return { error: reminderApiErrorMessage(error.status, error.detail) };
+    return { error: reminderApiErrorMessage(0) };
+  }
+  revalidatePath("/lembretes");
+  // A fresh value lets the form reset itself after each successful create.
+  return { created: Date.now() };
+}
+
+export async function deleteReminder(formData: FormData) {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  await apiFetch(`/api/v1/reminders/${encodeURIComponent(id)}`, { method: "DELETE" });
+  redirect("/lembretes?deleted=1");
 }
 
 export async function attachTaskMemory(formData: FormData) {

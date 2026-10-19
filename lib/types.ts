@@ -103,6 +103,23 @@ export type PushoverSound = {
   name: string;
 };
 
+export type ReminderStatus = "pending" | "sent" | "failed";
+
+export type Reminder = {
+  id: string;
+  title?: string | null;
+  message: string;
+  priority: number;
+  sound?: string | null;
+  send_at: string;
+  status: ReminderStatus;
+  attempts: number;
+  last_error?: string | null;
+  sent_at?: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export type McpStatus = {
   enabled: boolean;
   endpoint: string;
@@ -238,6 +255,9 @@ export type TaskSchedule = {
   due_in_minutes?: number | null;
   conversation_id?: string | null;
   contact_id?: string | null;
+  notify: boolean;
+  notify_priority: number;
+  notify_sound?: string | null;
   next_run_at?: string | null;
   last_run_at?: string | null;
   last_task_id?: string | null;

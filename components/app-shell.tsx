@@ -40,7 +40,7 @@ const groups: NavGroup[] = [
       { href: "/conversations", label: "Conversas", icon: MessageCircle },
       { href: "/contacts", label: "Contatos", icon: ContactRound },
       { href: "/search", label: "Busca", icon: Search },
-      { href: "/tarefas", label: "Tarefas", icon: CheckSquare, match: ["/tarefas", "/recorrentes"] },
+      { href: "/tarefas", label: "Tarefas", icon: CheckSquare, match: ["/tarefas", "/recorrentes", "/lembretes"] },
       { href: "/empresas", label: "Empresas", icon: Building2 },
       { href: "/memorias", label: "Memórias", icon: BookMarked },
     ],
@@ -58,7 +58,7 @@ const groups: NavGroup[] = [
 const mobileItems: NavItem[] = [
   { href: "/conversations", label: "Conversas", icon: MessageCircle },
   { href: "/contacts", label: "Contatos", icon: ContactRound },
-  { href: "/tarefas", label: "Tarefas", icon: CheckSquare, match: ["/tarefas", "/recorrentes"] },
+  { href: "/tarefas", label: "Tarefas", icon: CheckSquare, match: ["/tarefas", "/recorrentes", "/lembretes"] },
   { href: "/search", label: "Busca", icon: Search },
 ];
 

@@ -10,6 +10,7 @@ import {
 } from "@/app/actions";
 import { CompanySelect } from "@/components/company-select";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { SoundOptions } from "@/components/pushover-forms";
 import { contactName } from "@/lib/format";
 import {
   buildCron,
@@ -22,7 +23,8 @@ import {
   type Frequency,
   type FrequencyMode,
 } from "@/lib/schedule-form";
-import type { Company, Contact, Conversation, TaskSchedule } from "@/lib/types";
+import { pushoverPriorities } from "@/lib/pushover-options";
+import type { Company, Contact, Conversation, PushoverSound, TaskSchedule } from "@/lib/types";
 
 const initialState: ScheduleFormState = {};
 const inputClass = "focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm";
@@ -31,10 +33,12 @@ export function TaskScheduleCreate({
   conversations,
   contacts,
   companies,
+  sounds,
 }: {
   conversations: Conversation[];
   contacts: Contact[];
   companies: Company[];
+  sounds: PushoverSound[];
 }) {
   const [open, setOpen] = useState(false);
 
@@ -59,7 +63,7 @@ export function TaskScheduleCreate({
         </button>
       </div>
       <div className="mt-5">
-        <TaskScheduleForm conversations={conversations} contacts={contacts} companies={companies} />
+        <TaskScheduleForm conversations={conversations} contacts={contacts} companies={companies} sounds={sounds} />
       </div>
     </section>
   );
@@ -70,15 +74,18 @@ export function TaskScheduleForm({
   conversations,
   contacts,
   companies,
+  sounds,
 }: {
   schedule?: TaskSchedule;
   conversations: Conversation[];
   contacts: Contact[];
   companies: Company[];
+  sounds: PushoverSound[];
 }) {
   const editing = Boolean(schedule);
   const [state, action, pending] = useActionState(editing ? updateTaskSchedule : createTaskSchedule, initialState);
   const [frequency, setFrequency] = useState<Frequency>(() => parseCron(schedule?.cron ?? "0 9 * * 1-5"));
+  const [notify, setNotify] = useState(schedule?.notify ?? false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, startDelete] = useTransition();
   const cron = buildCron(frequency);
@@ -185,6 +192,29 @@ export function TaskScheduleForm({
           <span className="mb-1.5 block font-medium">Descrição</span>
           <textarea name="description" rows={3} maxLength={10000} defaultValue={schedule?.description || ""} placeholder="Detalhes copiados em cada tarefa criada" className={inputClass} />
         </label>
+        <fieldset className="grid gap-3 rounded-xl border border-line p-4 sm:col-span-2 sm:grid-cols-2">
+          <legend className="px-1 text-xs font-bold uppercase tracking-wider text-muted">Notificação</legend>
+          <label className="inline-flex items-center gap-2 text-sm font-medium sm:col-span-2">
+            <input type="checkbox" name="notify" checked={notify} onChange={(event) => setNotify(event.target.checked)} className="size-4 accent-brand" />
+            Enviar notificação no Pushover a cada execução
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium">Prioridade</span>
+            <select name="notify_priority" disabled={!notify} defaultValue={String(schedule?.notify_priority ?? 0)} className={`${inputClass} bg-white disabled:opacity-60`}>
+              {pushoverPriorities.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
+            </select>
+          </label>
+          <label className="block text-sm">
+            <span className="mb-1.5 block font-medium">Som</span>
+            <select name="notify_sound" disabled={!notify} defaultValue={schedule?.notify_sound || ""} className={`${inputClass} bg-white disabled:opacity-60`}>
+              <SoundOptions sounds={sounds} current={schedule?.notify_sound} />
+            </select>
+          </label>
+          <p className="text-xs text-muted sm:col-span-2">Usa o título como título da notificação e a descrição (ou o título) como mensagem. Requer a integração Pushover ativa.</p>
+          {/* Disabled selects are not submitted; keep the saved values when notifications are off. */}
+          {!notify ? <><input type="hidden" name="notify_priority" value={String(schedule?.notify_priority ?? 0)} /><input type="hidden" name="notify_sound" value={schedule?.notify_sound || ""} /></> : null}
+        </fieldset>
+
         <div className="flex flex-col gap-2 sm:col-span-2">
           <Checkbox name="skip_if_open" label="Não criar nova tarefa enquanto a anterior estiver aberta" defaultChecked={schedule?.skip_if_open ?? false} />
           <Checkbox name="enabled" label="Recorrência ativa" defaultChecked={schedule?.enabled ?? true} />

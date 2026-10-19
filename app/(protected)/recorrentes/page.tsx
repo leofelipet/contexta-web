@@ -9,6 +9,7 @@ import { tarefasTabs } from "@/components/section-tab-items";
 import { TaskScheduleCreate } from "@/components/task-schedule-form";
 import { Badge, EmptyState, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
+import { loadPushoverSounds } from "@/lib/pushover";
 import { formatDate } from "@/lib/format";
 import { describeCron } from "@/lib/schedule-form";
 import type { Company, Contact, Conversation, Paginated, TaskSchedule } from "@/lib/types";
@@ -42,13 +43,14 @@ export default async function RecorrentesPage({
   const query = await searchParams;
   const enabled = query.enabled === "true" || query.enabled === "false" ? query.enabled : undefined;
 
-  const [payload, conversationsPayload, contactsPayload, companiesPayload] = await Promise.all([
+  const [payload, conversationsPayload, contactsPayload, companiesPayload, sounds] = await Promise.all([
     apiFetch<TaskSchedule[] | Paginated<TaskSchedule>>("/api/v1/task-schedules", {
       query: { limit: 50, cursor: query.cursor, enabled, q: query.q || undefined },
     }),
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { limit: 200 } }),
     apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
+    loadPushoverSounds(),
   ]);
   const scheduleList = itemsFrom(payload);
 
@@ -70,7 +72,7 @@ export default async function RecorrentesPage({
         </p>
       )}
 
-      <TaskScheduleCreate conversations={itemsFrom(conversationsPayload)} contacts={itemsFrom(contactsPayload)} companies={itemsFrom(companiesPayload)} />
+      <TaskScheduleCreate conversations={itemsFrom(conversationsPayload)} contacts={itemsFrom(contactsPayload)} companies={itemsFrom(companiesPayload)} sounds={sounds} />
 
       <div className="mb-6 grid gap-3 rounded-2xl border border-line bg-white p-4 sm:grid-cols-[1fr_14rem]">
         <label className="block text-sm">
@@ -116,6 +118,7 @@ export default async function RecorrentesPage({
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate text-sm font-semibold">#{schedule.id} - {schedule.title}</p>
                       <Badge tone={schedule.enabled ? "success" : "neutral"}>{schedule.enabled ? "Ativa" : "Pausada"}</Badge>
+                      {schedule.notify ? <Badge tone="warning">Notifica</Badge> : null}
                     </div>
                     <p className="mt-1 text-xs text-muted">
                       {[describeCron(schedule.cron), schedule.company_name].filter(Boolean).join(" · ")}
