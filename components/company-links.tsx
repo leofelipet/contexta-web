@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useTransition } from "react";
 import { Link2Off } from "lucide-react";
-import { attachCompanyContact, detachCompanyContact, setCompanyTask } from "@/app/actions";
+import { attachCompanyContact, attachCompanyConversation, detachCompanyContact, detachCompanyConversation, setCompanyMemory, setCompanyTask } from "@/app/actions";
 import { Badge } from "@/components/ui";
 import { contactName, formatDate } from "@/lib/format";
-import type { Contact, Task } from "@/lib/types";
+import type { Contact, Conversation, Memory, Task } from "@/lib/types";
 
 const statusLabel: Record<string, string> = {
   pending: "Pendente",
@@ -155,6 +155,153 @@ export function CompanyContactsSection({
             {available.map((contact) => (
               <option key={contact.id} value={contact.id}>
                 {contactName(contact)}{contact.phone ? ` · ${contact.phone}` : ""}{contact.company_name ? ` · hoje em ${contact.company_name}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex items-end">
+          <button className={attachButtonClass}>Vincular</button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+export function CompanyConversationsSection({
+  companyId,
+  linked,
+  candidates,
+}: {
+  companyId: string;
+  linked: Conversation[];
+  candidates: Conversation[];
+}) {
+  const [pending, startTransition] = useTransition();
+  const available = candidates.filter((conversation) => conversation.company_id !== companyId);
+
+  return (
+    <section className="mt-6 rounded-2xl border border-line bg-white p-6">
+      <h2 className="font-semibold">Conversas</h2>
+      <p className="mt-1 text-sm text-muted">Grupos e chats desta empresa, por exemplo o grupo do cliente.</p>
+
+      {linked.length ? (
+        <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
+          {linked.map((conversation) => (
+            <li key={conversation.id} className="flex flex-wrap items-center gap-3 p-3">
+              <div className="min-w-0 flex-1">
+                <Link href={`/conversations/${encodeURIComponent(conversation.id)}`} className="text-sm font-semibold hover:underline">
+                  {conversation.title || "Conversa sem título"}
+                </Link>
+                <p className="text-xs text-muted">{conversation.type === "group" ? "Grupo" : "Direto"}</p>
+              </div>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  startTransition(async () => {
+                    const formData = new FormData();
+                    formData.set("company_id", companyId);
+                    formData.set("conversation_id", conversation.id);
+                    await detachCompanyConversation(formData);
+                  });
+                }}
+                className={detachButtonClass}
+              >
+                <Link2Off size={14} />Desvincular
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm text-muted">Nenhuma conversa vinculada ainda.</p>
+      )}
+
+      <form action={attachCompanyConversation} className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+        <input type="hidden" name="company_id" value={companyId} />
+        <label className="block text-sm">
+          <span className="mb-1.5 block font-medium">Vincular conversa</span>
+          <select name="conversation_id" required defaultValue="" className={selectClass}>
+            <option value="" disabled>Selecione uma conversa</option>
+            {available.map((conversation) => (
+              <option key={conversation.id} value={conversation.id}>
+                {conversation.title || "Conversa sem título"}{conversation.company_name ? ` · hoje em ${conversation.company_name}` : ""}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="flex items-end">
+          <button className={attachButtonClass}>Vincular</button>
+        </div>
+      </form>
+    </section>
+  );
+}
+
+export function CompanyMemoriesSection({
+  companyId,
+  linked,
+  candidates,
+}: {
+  companyId: string;
+  linked: Memory[];
+  candidates: Memory[];
+}) {
+  const [pending, startTransition] = useTransition();
+  const available = candidates.filter((memory) => memory.company_id !== companyId);
+
+  return (
+    <section className="mt-6 rounded-2xl border border-line bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-semibold">Memórias</h2>
+        <Link href="/memorias" className="text-sm font-medium text-muted hover:text-ink">
+          Ver memórias
+        </Link>
+      </div>
+      <p className="mt-1 text-sm text-muted">Contexto que o agente deve ter ao olhar esta empresa.</p>
+
+      {linked.length ? (
+        <ul className="mt-4 divide-y divide-line rounded-xl border border-line">
+          {linked.map((memory) => (
+            <li key={memory.id} className="flex flex-wrap items-center gap-3 p-3">
+              <div className="min-w-0 flex-1">
+                <Link href={`/memorias/${encodeURIComponent(memory.id)}`} className="text-sm font-semibold hover:underline">
+                  {memory.title || "Sem título"}
+                </Link>
+                <p className="line-clamp-2 text-xs text-muted">{memory.content}</p>
+              </div>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  startTransition(async () => {
+                    const formData = new FormData();
+                    formData.set("page_company_id", companyId);
+                    formData.set("memory_id", memory.id);
+                    formData.set("company_id", "");
+                    await setCompanyMemory(formData);
+                  });
+                }}
+                className={detachButtonClass}
+              >
+                <Link2Off size={14} />Desvincular
+              </button>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-4 text-sm text-muted">Nenhuma memória vinculada ainda.</p>
+      )}
+
+      <form action={setCompanyMemory} className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto]">
+        <input type="hidden" name="page_company_id" value={companyId} />
+        <input type="hidden" name="company_id" value={companyId} />
+        <label className="block text-sm">
+          <span className="mb-1.5 block font-medium">Vincular memória existente</span>
+          <select name="memory_id" required defaultValue="" className={selectClass}>
+            <option value="" disabled>Selecione uma memória</option>
+            {available.map((memory) => (
+              <option key={memory.id} value={memory.id}>
+                {memory.title || "Sem título"}{memory.company_name ? ` · hoje em ${memory.company_name}` : ""}
               </option>
             ))}
           </select>

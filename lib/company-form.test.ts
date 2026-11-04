@@ -8,9 +8,19 @@ function form(values: Record<string, string>) {
 }
 
 describe("company form", () => {
-  it("trims name and notes", () => {
-    expect(companyBody(form({ name: "  ACME ", notes: " cliente " }))).toEqual({ name: "ACME", notes: "cliente" });
-    expect(companyBody(form({}))).toEqual({ name: "", notes: "" });
+  it("trims name, notes, rules, and pairs links", () => {
+    const data = form({ name: "  ACME ", notes: " cliente ", rules: " avisar " });
+    data.append("link_label", " Planilha ");
+    data.append("link_url", " https://example.com/sheet ");
+    data.append("link_label", "");
+    data.append("link_url", "");
+    expect(companyBody(data)).toEqual({
+      name: "ACME",
+      notes: "cliente",
+      rules: "avisar",
+      links: [{ label: "Planilha", url: "https://example.com/sheet" }],
+    });
+    expect(companyBody(form({}))).toEqual({ name: "", notes: "", rules: "", links: [] });
   });
 
   it("maps API errors", () => {

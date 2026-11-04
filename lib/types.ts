@@ -18,6 +18,8 @@ export type Conversation = {
   contact_id?: string;
   type: string;
   title?: string | null;
+  company_id?: string | null;
+  company_name?: string | null;
   last_message?: Message | null;
   last_message_at?: string | null;
   created_at?: string;
@@ -266,13 +268,22 @@ export type TaskSchedule = {
   updated_at: string;
 };
 
+export type CompanyLink = {
+  label: string;
+  url: string;
+};
+
 export type Company = {
   id: string;
   name: string;
   notes?: string | null;
+  rules?: string | null;
+  links?: CompanyLink[] | null;
   open_task_count: number;
   task_count: number;
   contact_count: number;
+  conversation_count?: number;
+  memory_count?: number;
   created_at: string;
   updated_at: string;
 };
@@ -288,8 +299,10 @@ export type Memory = {
   message_id?: string;
   conversation_id?: string;
   contact_id?: string;
+  company_id?: string;
   conversation_title?: string;
   contact_name?: string;
+  company_name?: string;
   embedding_status: EmbeddingStatus | string;
   embedding_model?: string;
   embedding_error?: string;

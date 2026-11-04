@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowLeft, Info } from "lucide-react";
+import { ArrowLeft, Building2, Info } from "lucide-react";
+import { setConversationCompany } from "@/app/actions";
 import { BlockConversationButton } from "@/components/block-conversation-button";
+import { CompanySelect } from "@/components/company-select";
 import { ConversationList } from "@/components/conversation-list";
 import { MessageThread } from "@/components/message-thread";
 import { Avatar } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
-import type { Conversation, DenylistEntry, Message, Paginated } from "@/lib/types";
+import type { Company, Conversation, DenylistEntry, Message, Paginated } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Conversa" };
 
@@ -20,7 +22,7 @@ export default async function ConversationPage({
   const { id } = await params;
   const filters = await searchParams;
   const encodedId = encodeURIComponent(id);
-  const [listPayload, conversation, messagePayload, denylistPayload] = await Promise.all([
+  const [listPayload, conversation, messagePayload, denylistPayload, companiesPayload] = await Promise.all([
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", {
       query: {
         query: filters.q,
@@ -32,6 +34,7 @@ export default async function ConversationPage({
     apiFetch<Conversation>(`/api/v1/conversations/${encodedId}`),
     apiFetch<Message[] | Paginated<Message>>(`/api/v1/conversations/${encodedId}/messages`, { query: { limit: 50 } }),
     apiFetch<DenylistEntry[] | Paginated<DenylistEntry>>("/api/v1/denylist", { query: { limit: 200 } }),
+    apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
   ]);
   const name = conversation.title || "Conversa sem título";
   const messages = [...itemsFrom(messagePayload)].reverse();
@@ -75,6 +78,23 @@ export default async function ConversationPage({
             </Link>
           )}
         </header>
+        <form action={setConversationCompany} className="flex shrink-0 items-center gap-2 border-b border-line bg-white px-3 py-2 sm:px-4">
+          <input type="hidden" name="conversation_id" value={conversation.id} />
+          <input type="hidden" name="current_company_id" value={conversation.company_id || ""} />
+          <label className="flex min-w-0 flex-1 items-center gap-2 text-xs font-bold uppercase tracking-wide text-muted">
+            <Building2 size={14} className="shrink-0 text-brand" />
+            <span className="shrink-0">Empresa</span>
+            <CompanySelect
+              companies={itemsFrom(companiesPayload)}
+              defaultValue={conversation.company_id}
+              className="focus-ring min-w-0 flex-1 rounded-lg border border-line bg-white px-2 py-1.5 text-sm font-normal normal-case tracking-normal text-ink sm:max-w-xs"
+            />
+          </label>
+          <button className="focus-ring rounded-lg bg-ink px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">Salvar</button>
+          {conversation.company_id && (
+            <Link href={`/empresas/${encodeURIComponent(conversation.company_id)}`} className="focus-ring hidden rounded-lg border border-line px-3 py-1.5 text-sm font-semibold hover:bg-slate-100 sm:inline-block">Ver empresa</Link>
+          )}
+        </form>
         <MessageThread conversationId={id} initialMessages={messages} initialCursor={cursor} isGroup={conversation.type === "group"} />
       </section>
     </div>

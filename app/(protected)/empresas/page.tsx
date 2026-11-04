@@ -90,7 +90,7 @@ export default async function EmpresasPage({
                   </div>
                   <div className="text-xs text-muted sm:text-right">
                     <p>{plural(company.open_task_count, "tarefa aberta", "tarefas abertas")} · {company.task_count} no total</p>
-                    <p className="mt-1">{plural(company.contact_count, "contato", "contatos")}</p>
+                    <p className="mt-1">{plural(company.contact_count, "contato", "contatos")} · {plural(company.conversation_count || 0, "conversa", "conversas")}</p>
                   </div>
                 </Link>
               </div>

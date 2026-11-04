@@ -269,6 +269,37 @@ export async function detachCompanyContact(formData: FormData) {
   redirect(`/empresas/${encodeURIComponent(companyId)}?updated=1`);
 }
 
+export async function attachCompanyConversation(formData: FormData) {
+  await requireSession();
+  const companyId = String(formData.get("company_id") || "").trim();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  await apiFetch(`/api/v1/companies/${encodeURIComponent(companyId)}/conversations`, {
+    method: "POST",
+    body: { conversation_id: conversationId },
+  });
+  redirect(`/empresas/${encodeURIComponent(companyId)}?updated=1`);
+}
+
+export async function detachCompanyConversation(formData: FormData) {
+  await requireSession();
+  const companyId = String(formData.get("company_id") || "").trim();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  await apiFetch(
+    `/api/v1/companies/${encodeURIComponent(companyId)}/conversations/${encodeURIComponent(conversationId)}`,
+    { method: "DELETE" },
+  );
+  redirect(`/empresas/${encodeURIComponent(companyId)}?updated=1`);
+}
+
+export async function setCompanyMemory(formData: FormData) {
+  await requireSession();
+  const pageCompanyId = String(formData.get("page_company_id") || "").trim();
+  const memoryId = String(formData.get("memory_id") || "").trim();
+  const companyId = String(formData.get("company_id") || "").trim();
+  await apiFetch(`/api/v1/memories/${encodeURIComponent(memoryId)}`, { method: "PATCH", body: { company_id: companyId } });
+  redirect(`/empresas/${encodeURIComponent(pageCompanyId)}?updated=1`);
+}
+
 /** Sets the contact's company from the contact page; empty clears it. */
 export async function setContactCompany(formData: FormData) {
   await requireSession();
@@ -287,6 +318,26 @@ export async function setContactCompany(formData: FormData) {
     );
   }
   redirect(`/contacts/${encodeURIComponent(contactId)}?updated=1`);
+}
+
+/** Sets the conversation's company from the conversation page; empty clears it. */
+export async function setConversationCompany(formData: FormData) {
+  await requireSession();
+  const conversationId = String(formData.get("conversation_id") || "").trim();
+  const companyId = String(formData.get("company_id") || "").trim();
+  const currentCompanyId = String(formData.get("current_company_id") || "").trim();
+  if (companyId) {
+    await apiFetch(`/api/v1/companies/${encodeURIComponent(companyId)}/conversations`, {
+      method: "POST",
+      body: { conversation_id: conversationId },
+    });
+  } else if (currentCompanyId) {
+    await apiFetch(
+      `/api/v1/companies/${encodeURIComponent(currentCompanyId)}/conversations/${encodeURIComponent(conversationId)}`,
+      { method: "DELETE" },
+    );
+  }
+  redirect(`/conversations/${encodeURIComponent(conversationId)}`);
 }
 
 export type ScheduleFormState = { error?: string };

@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState, useState, useTransition } from "react";
-import { LoaderCircle, Plus, Trash2 } from "lucide-react";
+import { LoaderCircle, Plus, Trash2, X } from "lucide-react";
 import { createCompany, deleteCompany, updateCompany, type CompanyFormState } from "@/app/actions";
 import { ConfirmDialog } from "@/components/confirm-dialog";
-import type { Company } from "@/lib/types";
+import type { Company, CompanyLink } from "@/lib/types";
 
 const initialState: CompanyFormState = {};
 const inputClass = "focus-ring w-full rounded-xl border border-line px-3 py-2.5 text-sm";
@@ -57,6 +57,11 @@ export function CompanyForm({ company }: { company?: Company }) {
           <span className="mb-1.5 block font-medium">Observações</span>
           <textarea name="notes" rows={4} maxLength={10000} defaultValue={company?.notes || ""} placeholder="Contexto, contrato, pessoas-chave…" className={inputClass} />
         </label>
+        <label className="block text-sm">
+          <span className="mb-1.5 block font-medium">Regras</span>
+          <textarea name="rules" rows={4} maxLength={10000} defaultValue={company?.rules || ""} placeholder="O que o agente deve sempre lembrar ao ver esta empresa." className={inputClass} />
+        </label>
+        <CompanyLinksFields links={company?.links || []} />
 
         {state.error ? <p role="alert" className="rounded-xl bg-red-50 px-3 py-2.5 text-sm text-red-700">{state.error}</p> : null}
 
@@ -81,7 +86,7 @@ export function CompanyForm({ company }: { company?: Company }) {
           open={confirmDelete}
           busy={deleting}
           title="Apagar empresa?"
-          description={`“${company.name}” será removida. Tarefas, recorrências e contatos vinculados são mantidos, apenas sem empresa.`}
+          description={`“${company.name}” será removida. Tarefas, recorrências, contatos, conversas e memórias vinculados são mantidos, apenas sem empresa.`}
           confirmLabel="Apagar"
           cancelLabel="Cancelar"
           onCancel={() => { if (!deleting) setConfirmDelete(false); }}
@@ -95,5 +100,42 @@ export function CompanyForm({ company }: { company?: Company }) {
         />
       ) : null}
     </>
+  );
+}
+
+function CompanyLinksFields({ links }: { links: CompanyLink[] }) {
+  const [rows, setRows] = useState<CompanyLink[]>(() => (links.length ? links : [{ label: "", url: "" }]));
+
+  return (
+    <fieldset className="grid gap-3">
+      <legend className="text-sm font-medium">Links importantes</legend>
+      {rows.map((row, index) => (
+        <div key={index} className="grid gap-2 sm:grid-cols-[1fr_2fr_auto]">
+          <input name="link_label" maxLength={200} value={row.label} placeholder="Rótulo" onChange={(event) => {
+            const next = [...rows];
+            next[index] = { ...next[index], label: event.target.value };
+            setRows(next);
+          }} className={inputClass} />
+          <input name="link_url" maxLength={2000} value={row.url} placeholder="https://" onChange={(event) => {
+            const next = [...rows];
+            next[index] = { ...next[index], url: event.target.value };
+            setRows(next);
+          }} className={inputClass} />
+          <button
+            type="button"
+            onClick={() => setRows(rows.length === 1 ? [{ label: "", url: "" }] : rows.filter((_, i) => i !== index))}
+            className="focus-ring inline-flex items-center justify-center rounded-xl border border-line px-3 text-muted hover:bg-slate-50"
+            aria-label="Remover link"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      ))}
+      {rows.length < 50 ? (
+        <button type="button" onClick={() => setRows([...rows, { label: "", url: "" }])} className="focus-ring inline-flex w-fit items-center gap-1.5 text-sm font-medium text-muted hover:text-ink">
+          <Plus size={14} />Adicionar link
+        </button>
+      ) : null}
+    </fieldset>
   );
 }

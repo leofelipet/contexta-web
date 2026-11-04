@@ -3,13 +3,13 @@ import Link from "next/link";
 import { ArrowLeft, Check, Repeat } from "lucide-react";
 import { notFound } from "next/navigation";
 import { CompanyForm } from "@/components/company-form";
-import { CompanyContactsSection, CompanyTasksSection } from "@/components/company-links";
+import { CompanyContactsSection, CompanyConversationsSection, CompanyMemoriesSection, CompanyTasksSection } from "@/components/company-links";
 import { TaskCreateForm } from "@/components/task-create-form";
 import { Badge, PageHeader } from "@/components/ui";
 import { apiFetch, itemsFrom } from "@/lib/api";
 import { formatDate } from "@/lib/format";
 import { describeCron } from "@/lib/schedule-form";
-import type { Company, Contact, Conversation, Paginated, Task, TaskSchedule } from "@/lib/types";
+import type { Company, Contact, Conversation, Memory, Paginated, Task, TaskSchedule } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Empresa" };
 
@@ -30,16 +30,20 @@ export default async function EmpresaDetailPage({
     notFound();
   }
 
-  const [tasksPayload, openTasksPayload, linkedContactsPayload, contactsPayload, conversationsPayload, companiesPayload, schedulesPayload] = await Promise.all([
+  const [tasksPayload, openTasksPayload, linkedContactsPayload, contactsPayload, conversationsPayload, linkedConversationsPayload, companiesPayload, schedulesPayload, linkedMemoriesPayload, memoriesPayload] = await Promise.all([
     apiFetch<Task[] | Paginated<Task>>("/api/v1/tasks", { query: { company_id: company.id, limit: 100 } }),
     apiFetch<Task[] | Paginated<Task>>("/api/v1/tasks", { query: { open_only: "1", limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { company_id: company.id, limit: 200 } }),
     apiFetch<Contact[] | Paginated<Contact>>("/api/v1/contacts", { query: { limit: 200 } }),
     apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { limit: 200 } }),
+    apiFetch<Conversation[] | Paginated<Conversation>>("/api/v1/conversations", { query: { company_id: company.id, limit: 200 } }),
     apiFetch<Company[] | Paginated<Company>>("/api/v1/companies", { query: { limit: 200 } }),
     apiFetch<TaskSchedule[] | Paginated<TaskSchedule>>("/api/v1/task-schedules", { query: { company_id: company.id, limit: 50 } }),
+    apiFetch<Memory[] | Paginated<Memory>>("/api/v1/memories", { query: { company_id: company.id, limit: 100 } }),
+    apiFetch<Memory[] | Paginated<Memory>>("/api/v1/memories", { query: { limit: 200 } }),
   ]);
   const contacts = itemsFrom(contactsPayload);
+  const conversations = itemsFrom(conversationsPayload);
   const scheduleList = itemsFrom(schedulesPayload);
 
   return (
@@ -50,7 +54,7 @@ export default async function EmpresaDetailPage({
       <PageHeader
         eyebrow="Empresa"
         title={company.name}
-        description={`${company.open_task_count} ${company.open_task_count === 1 ? "tarefa aberta" : "tarefas abertas"} · cadastrada em ${formatDate(company.created_at)}`}
+        description={`${company.open_task_count} ${company.open_task_count === 1 ? "tarefa aberta" : "tarefas abertas"} · ${company.contact_count} ${company.contact_count === 1 ? "contato" : "contatos"} · cadastrada em ${formatDate(company.created_at)}`}
       />
       {query.created === "1" && (
         <p className="mb-5 flex items-center gap-2 rounded-xl bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
@@ -69,7 +73,7 @@ export default async function EmpresaDetailPage({
 
       <div className="mt-6">
         <TaskCreateForm
-          conversations={itemsFrom(conversationsPayload)}
+          conversations={conversations}
           contacts={contacts}
           companies={itemsFrom(companiesPayload)}
           defaultCompanyId={company.id}
@@ -78,6 +82,8 @@ export default async function EmpresaDetailPage({
       </div>
       <CompanyTasksSection companyId={company.id} linked={itemsFrom(tasksPayload)} candidates={itemsFrom(openTasksPayload)} />
       <CompanyContactsSection companyId={company.id} linked={itemsFrom(linkedContactsPayload)} candidates={contacts} />
+      <CompanyConversationsSection companyId={company.id} linked={itemsFrom(linkedConversationsPayload)} candidates={conversations} />
+      <CompanyMemoriesSection companyId={company.id} linked={itemsFrom(linkedMemoriesPayload)} candidates={itemsFrom(memoriesPayload)} />
 
       {scheduleList.length ? (
         <section className="mt-6 rounded-2xl border border-line bg-white p-6">
