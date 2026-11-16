@@ -11,7 +11,7 @@ export function buildApiUrl(base: string, path: string, query?: Record<string, Q
 }
 
 export function allowMessageParams(params: URLSearchParams) {
-  const allowed = new Set(["cursor", "limit"]);
+  const allowed = new Set(["cursor", "limit", "query"]);
   const result: Record<string, string> = {};
   for (const [key, value] of params) if (allowed.has(key) && value) result[key] = value;
   return result;

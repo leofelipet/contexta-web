@@ -9,8 +9,8 @@ describe("buildApiUrl", () => {
 });
 
 describe("allowMessageParams", () => {
-  it("only forwards pagination parameters", () => {
-    expect(allowMessageParams(new URLSearchParams("cursor=abc&limit=20&token=secret")))
-      .toEqual({ cursor: "abc", limit: "20" });
+  it("only forwards pagination and search parameters", () => {
+    expect(allowMessageParams(new URLSearchParams("cursor=abc&limit=20&query=joao&token=secret")))
+      .toEqual({ cursor: "abc", limit: "20", query: "joao" });
   });
 });
