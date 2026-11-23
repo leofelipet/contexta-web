@@ -45,7 +45,7 @@ Do not run heavy builds in parallel. When reporting a result, use the command's 
 
 - There is a single admin user: a password (bcrypt hash in env, can be disabled) and/or passkeys.
 - The session is a signed HTTP-only cookie.
-- `proxy.ts` guards pages, but its matcher skips `/api`. Every route handler under `app/api` must check `hasSession()` itself, except the passkey login routes, which are public by design and rate-limited.
+- `proxy.ts` guards pages, but its matcher skips `/api`. Every route handler under `app/api` must check `hasSession()` itself, except the passkey login routes, which are public by design (the `verify` step is rate-limited).
 
 ## UI
 
