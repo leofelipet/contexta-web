@@ -122,11 +122,26 @@ export type Reminder = {
   updated_at: string;
 };
 
+export type McpTool = { name: string; description: string; read_only: boolean };
+
+export type McpAccess = "read" | "write" | "custom";
+
+export type McpKey = {
+  id: string;
+  name: string;
+  prefix: string;
+  access: McpAccess;
+  tools: string[];
+  created_at: string;
+  expires_at?: string | null;
+  last_used_at?: string | null;
+};
+
 export type McpStatus = {
   enabled: boolean;
   endpoint: string;
   authentication: string;
-  tools: string[];
+  tools: McpTool[] | null;
   last_access_at?: string | null;
 };
 

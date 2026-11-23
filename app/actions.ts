@@ -8,6 +8,7 @@ import { ApiError, apiFetch } from "@/lib/api";
 import { bulkIds, type BulkResult } from "@/lib/bulk";
 import { companyApiErrorMessage, companyBody, companyReturnPath } from "@/lib/company-form";
 import { createEmailAccountBody, emailApiErrorMessage, updateEmailAccountBody } from "@/lib/email-form";
+import { mcpKeyBody, mcpKeyErrorMessage } from "@/lib/mcp-key-form";
 import { priorityFromForm } from "@/lib/pushover-options";
 import { reminderApiErrorMessage, reminderBody, ReminderFormError } from "@/lib/reminder-form";
 import { scheduleApiErrorMessage, scheduleBody, ScheduleFormError } from "@/lib/schedule-form";
@@ -590,4 +591,35 @@ export async function bulkRemoveDenylistEntries(ids: string[]) {
 // conversation may be one of the deleted ones.
 export async function bulkDeleteConversations(ids: string[]) {
   return bulkRequest("/api/v1/conversations/bulk-delete", ids, {}, null);
+}
+
+export type McpKeyFormState = { error?: string; token?: string; saved?: boolean };
+
+export async function createMcpKey(_: McpKeyFormState, formData: FormData): Promise<McpKeyFormState> {
+  await requireSession();
+  try {
+    const created = await apiFetch<{ token: string }>("/api/v1/mcp/keys", { method: "POST", body: mcpKeyBody(formData, true) });
+    revalidatePath("/mcp");
+    return { token: created.token };
+  } catch (error) {
+    return { error: mcpKeyErrorMessage(error instanceof ApiError ? error.detail : undefined) };
+  }
+}
+
+export async function updateMcpKey(_: McpKeyFormState, formData: FormData): Promise<McpKeyFormState> {
+  await requireSession();
+  const id = String(formData.get("id") || "").trim();
+  try {
+    await apiFetch(`/api/v1/mcp/keys/${encodeURIComponent(id)}`, { method: "PATCH", body: mcpKeyBody(formData) });
+  } catch (error) {
+    return { error: mcpKeyErrorMessage(error instanceof ApiError ? error.detail : undefined) };
+  }
+  revalidatePath("/mcp");
+  return { saved: true };
+}
+
+export async function deleteMcpKey(id: string) {
+  await requireSession();
+  await apiFetch(`/api/v1/mcp/keys/${encodeURIComponent(String(id).trim())}`, { method: "DELETE" });
+  revalidatePath("/mcp");
 }
